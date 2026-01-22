@@ -1,0 +1,2264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ExtraRepro | Deep Molecular Biology</title>
+    <style>
+        :root {
+            --primary: #ffffff;
+            --secondary: rgba(255,255,255,0.6);
+            --tertiary: rgba(255,255,255,0.4);
+            --bg-dark: #000000;
+            --bg-mid: #0a0a0a;
+            --bg-light: #111111;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background: var(--bg-dark);
+            color: #fff;
+            overflow-x: hidden;
+            min-height: 100vh;
+        }
+
+        /* ===== NAVIGATION ===== */
+        .main-nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            padding: 20px 40px;
+            background: rgba(0,0,0,0.95);
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            backdrop-filter: blur(20px);
+        }
+
+        .nav-link {
+            color: rgba(255,255,255,0.5);
+            text-decoration: none;
+            font-size: 0.75rem;
+            letter-spacing: 0.3em;
+            text-transform: uppercase;
+            padding: 10px 20px;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .nav-link:hover { color: rgba(255,255,255,0.9); }
+        .nav-link.active { color: rgba(255,255,255,1); }
+        .nav-link.active::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 20px;
+            right: 20px;
+            height: 1px;
+            background: rgba(255,255,255,0.5);
+        }
+
+        /* ===== SIDE NAVIGATION (Table of Contents) ===== */
+        .side-nav {
+            position: fixed;
+            left: 30px;
+            top: 50%;
+            transform: translateY(-50%);
+            z-index: 999;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .side-nav-item {
+            width: 12px;
+            height: 12px;
+            border: 1px solid rgba(255,255,255,0.3);
+            background: transparent;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .side-nav-item:hover {
+            border-color: rgba(255,255,255,0.8);
+            transform: scale(1.2);
+        }
+
+        .side-nav-item.active {
+            background: rgba(255,255,255,0.9);
+            border-color: rgba(255,255,255,0.9);
+        }
+
+        .side-nav-item::after {
+            content: attr(data-label);
+            position: absolute;
+            left: 25px;
+            top: 50%;
+            transform: translateY(-50%);
+            white-space: nowrap;
+            font-size: 0.65rem;
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+            color: rgba(255,255,255,0.4);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            pointer-events: none;
+        }
+
+        .side-nav-item:hover::after {
+            opacity: 1;
+        }
+
+        /* ===== PROGRESS BAR ===== */
+        .progress-bar {
+            position: fixed;
+            top: 61px;
+            left: 0;
+            height: 2px;
+            background: rgba(255,255,255,0.8);
+            z-index: 1001;
+            width: 0%;
+            transition: width 0.1s ease;
+        }
+
+        /* ===== CONTROLS ===== */
+        .controls {
+            position: fixed;
+            top: 80px;
+            right: 20px;
+            z-index: 100;
+            display: flex;
+            gap: 10px;
+        }
+
+        .control-btn {
+            width: 50px;
+            height: 50px;
+            border: 1px solid rgba(255,255,255,0.3);
+            background: rgba(255,255,255,0.05);
+            color: rgba(255,255,255,0.7);
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(10px);
+            text-decoration: none;
+        }
+
+        .control-btn:hover {
+            background: rgba(255,255,255,0.15);
+            border-color: rgba(255,255,255,0.5);
+            transform: scale(1.1);
+        }
+
+        .control-btn.active {
+            background: rgba(255,255,255,0.9);
+            color: var(--bg-dark);
+        }
+
+        .control-btn svg { width: 24px; height: 24px; }
+
+        /* ===== HERO SECTION ===== */
+        .hero {
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        #heroCanvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 0;
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 10;
+            text-align: center;
+            max-width: 900px;
+            padding: 60px 80px;
+            background: rgba(0,0,0,0.8);
+            border: 1px solid rgba(255,255,255,0.1);
+            backdrop-filter: blur(15px);
+        }
+
+        .hero-content h1 {
+            font-size: 3rem;
+            font-weight: 100;
+            letter-spacing: 0.6em;
+            text-transform: uppercase;
+            margin-bottom: 20px;
+        }
+
+        .hero-content .tagline {
+            font-size: 1rem;
+            color: rgba(255,255,255,0.5);
+            letter-spacing: 0.4em;
+            margin-bottom: 40px;
+        }
+
+        .hero-content .intro {
+            font-size: 0.9rem;
+            line-height: 2;
+            color: rgba(255,255,255,0.6);
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .scroll-indicator {
+            position: absolute;
+            bottom: 40px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        .scroll-indicator span {
+            font-size: 0.6rem;
+            letter-spacing: 0.3em;
+            color: rgba(255,255,255,0.3);
+            text-transform: uppercase;
+        }
+
+        .scroll-indicator svg {
+            width: 20px;
+            height: 20px;
+            stroke: rgba(255,255,255,0.3);
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateX(-50%) translateY(0); }
+            50% { transform: translateX(-50%) translateY(10px); }
+        }
+
+        /* ===== SECTION STYLES ===== */
+        .section {
+            min-height: 100vh;
+            padding: 120px 5%;
+            position: relative;
+        }
+
+        .section-header {
+            text-align: center;
+            margin-bottom: 80px;
+        }
+
+        .section-number {
+            font-size: 0.7rem;
+            letter-spacing: 0.5em;
+            color: rgba(255,255,255,0.2);
+            margin-bottom: 20px;
+        }
+
+        .section-title {
+            font-size: 2rem;
+            font-weight: 100;
+            letter-spacing: 0.4em;
+            text-transform: uppercase;
+            margin-bottom: 20px;
+        }
+
+        .section-subtitle {
+            font-size: 0.85rem;
+            color: rgba(255,255,255,0.4);
+            letter-spacing: 0.2em;
+            max-width: 600px;
+            margin: 0 auto;
+            line-height: 1.8;
+        }
+
+        /* ===== INTRODUCTION SECTION ===== */
+        #introduction {
+            background: linear-gradient(180deg, var(--bg-dark) 0%, var(--bg-mid) 100%);
+        }
+
+        .intro-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 40px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .intro-card {
+            padding: 50px 40px;
+            background: rgba(255,255,255,0.02);
+            border: 1px solid rgba(255,255,255,0.08);
+            transition: all 0.5s ease;
+            text-align: center;
+        }
+
+        .intro-card:hover {
+            background: rgba(255,255,255,0.05);
+            border-color: rgba(255,255,255,0.15);
+            transform: translateY(-10px);
+        }
+
+        .intro-card-icon {
+            width: 60px;
+            height: 60px;
+            margin: 0 auto 30px;
+            stroke: rgba(255,255,255,0.6);
+        }
+
+        .intro-card h3 {
+            font-size: 1rem;
+            font-weight: 300;
+            letter-spacing: 0.2em;
+            margin-bottom: 20px;
+        }
+
+        .intro-card p {
+            font-size: 0.85rem;
+            line-height: 1.9;
+            color: rgba(255,255,255,0.5);
+        }
+
+        /* ===== DNA SECTION ===== */
+        #dna-structure {
+            background: var(--bg-mid);
+        }
+
+        .dna-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 80px;
+            max-width: 1400px;
+            margin: 0 auto;
+            align-items: center;
+        }
+
+        .dna-visual {
+            position: relative;
+            height: 600px;
+        }
+
+        #dnaCanvas {
+            width: 100%;
+            height: 100%;
+        }
+
+        .dna-info h3 {
+            font-size: 1.3rem;
+            font-weight: 200;
+            letter-spacing: 0.2em;
+            margin-bottom: 30px;
+        }
+
+        .dna-info p {
+            font-size: 0.9rem;
+            line-height: 2;
+            color: rgba(255,255,255,0.6);
+            margin-bottom: 30px;
+        }
+
+        .base-pairs {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+            margin-top: 40px;
+        }
+
+        .base-pair {
+            padding: 25px;
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.1);
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .base-pair:hover {
+            background: rgba(255,255,255,0.08);
+            transform: scale(1.02);
+        }
+
+        .base-pair .pair {
+            font-size: 1.5rem;
+            font-weight: 100;
+            letter-spacing: 0.3em;
+            margin-bottom: 10px;
+        }
+
+        .base-pair .name {
+            font-size: 0.7rem;
+            color: rgba(255,255,255,0.4);
+            letter-spacing: 0.15em;
+        }
+
+        /* ===== RNA SECTION ===== */
+        #rna-world {
+            background: linear-gradient(180deg, var(--bg-mid) 0%, var(--bg-dark) 100%);
+        }
+
+        .rna-types {
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .rna-type {
+            display: grid;
+            grid-template-columns: 120px 1fr;
+            gap: 40px;
+            padding: 40px;
+            background: rgba(255,255,255,0.02);
+            border: 1px solid rgba(255,255,255,0.08);
+            transition: all 0.5s ease;
+            align-items: center;
+        }
+
+        .rna-type:hover {
+            background: rgba(255,255,255,0.05);
+            border-color: rgba(255,255,255,0.15);
+        }
+
+        .rna-abbr {
+            font-size: 2.5rem;
+            font-weight: 100;
+            color: rgba(255,255,255,0.8);
+            text-align: center;
+        }
+
+        .rna-details h4 {
+            font-size: 1rem;
+            font-weight: 300;
+            letter-spacing: 0.2em;
+            margin-bottom: 15px;
+        }
+
+        .rna-details p {
+            font-size: 0.85rem;
+            line-height: 1.9;
+            color: rgba(255,255,255,0.5);
+        }
+
+        .rna-details .function {
+            margin-top: 15px;
+            font-size: 0.75rem;
+            color: rgba(255,255,255,0.3);
+            font-style: italic;
+        }
+
+        /* ===== PROTEIN SYNTHESIS ===== */
+        #protein-synthesis {
+            background: var(--bg-dark);
+        }
+
+        .synthesis-flow {
+            display: flex;
+            justify-content: center;
+            align-items: stretch;
+            gap: 0;
+            max-width: 1200px;
+            margin: 0 auto 60px;
+            flex-wrap: wrap;
+        }
+
+        .synthesis-step {
+            flex: 1;
+            min-width: 200px;
+            padding: 40px 30px;
+            background: rgba(255,255,255,0.02);
+            border: 1px solid rgba(255,255,255,0.08);
+            text-align: center;
+            position: relative;
+            transition: all 0.4s ease;
+        }
+
+        .synthesis-step::after {
+            content: '→';
+            position: absolute;
+            right: -15px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 1.5rem;
+            color: rgba(255,255,255,0.2);
+            z-index: 10;
+        }
+
+        .synthesis-step:last-child::after { display: none; }
+
+        .synthesis-step:hover {
+            background: rgba(255,255,255,0.06);
+            transform: translateY(-5px);
+        }
+
+        .step-number {
+            font-size: 2rem;
+            font-weight: 100;
+            color: rgba(255,255,255,0.15);
+            margin-bottom: 20px;
+        }
+
+        .synthesis-step h4 {
+            font-size: 0.9rem;
+            font-weight: 300;
+            letter-spacing: 0.15em;
+            margin-bottom: 15px;
+        }
+
+        .synthesis-step p {
+            font-size: 0.8rem;
+            line-height: 1.8;
+            color: rgba(255,255,255,0.5);
+        }
+
+        /* Amino Acids Grid */
+        .amino-section {
+            margin-top: 80px;
+        }
+
+        .amino-section h3 {
+            text-align: center;
+            font-size: 1rem;
+            font-weight: 200;
+            letter-spacing: 0.3em;
+            margin-bottom: 40px;
+            color: rgba(255,255,255,0.6);
+        }
+
+        .amino-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+            gap: 10px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .amino-acid {
+            padding: 20px 10px;
+            background: rgba(255,255,255,0.02);
+            border: 1px solid rgba(255,255,255,0.05);
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .amino-acid:hover {
+            background: rgba(255,255,255,0.08);
+            transform: scale(1.1);
+            z-index: 10;
+        }
+
+        .amino-acid .abbr {
+            font-size: 1.2rem;
+            font-weight: 100;
+            margin-bottom: 5px;
+        }
+
+        .amino-acid .name {
+            font-size: 0.55rem;
+            color: rgba(255,255,255,0.4);
+            letter-spacing: 0.1em;
+        }
+
+        /* ===== CELL CYCLE SECTION ===== */
+        #cell-cycle {
+            background: linear-gradient(180deg, var(--bg-dark) 0%, var(--bg-mid) 100%);
+        }
+
+        .cycle-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 80px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .cycle-visual {
+            position: relative;
+            width: 400px;
+            height: 400px;
+        }
+
+        #cycleCanvas {
+            width: 100%;
+            height: 100%;
+        }
+
+        .cycle-phases {
+            flex: 1;
+            max-width: 500px;
+        }
+
+        .phase-item {
+            display: flex;
+            gap: 25px;
+            padding: 25px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .phase-item:hover {
+            padding-left: 20px;
+            border-color: rgba(255,255,255,0.15);
+        }
+
+        .phase-item.active {
+            padding-left: 20px;
+        }
+
+        .phase-marker {
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid rgba(255,255,255,0.2);
+            font-size: 0.7rem;
+            font-weight: 300;
+            letter-spacing: 0.1em;
+            transition: all 0.3s ease;
+        }
+
+        .phase-item:hover .phase-marker,
+        .phase-item.active .phase-marker {
+            background: rgba(255,255,255,0.9);
+            color: var(--bg-dark);
+        }
+
+        .phase-content h4 {
+            font-size: 0.95rem;
+            font-weight: 300;
+            letter-spacing: 0.15em;
+            margin-bottom: 8px;
+        }
+
+        .phase-content p {
+            font-size: 0.8rem;
+            color: rgba(255,255,255,0.5);
+            line-height: 1.7;
+        }
+
+        /* ===== ORGANELLES SECTION ===== */
+        #organelles {
+            background: var(--bg-mid);
+        }
+
+        .organelle-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .organelle-card {
+            padding: 40px;
+            background: rgba(255,255,255,0.02);
+            border: 1px solid rgba(255,255,255,0.08);
+            transition: all 0.5s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .organelle-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 3px;
+            height: 0;
+            background: rgba(255,255,255,0.5);
+            transition: height 0.5s ease;
+        }
+
+        .organelle-card:hover::before {
+            height: 100%;
+        }
+
+        .organelle-card:hover {
+            background: rgba(255,255,255,0.05);
+            transform: translateX(10px);
+        }
+
+        .organelle-card h4 {
+            font-size: 1rem;
+            font-weight: 300;
+            letter-spacing: 0.2em;
+            margin-bottom: 20px;
+        }
+
+        .organelle-card p {
+            font-size: 0.85rem;
+            line-height: 1.9;
+            color: rgba(255,255,255,0.5);
+            margin-bottom: 20px;
+        }
+
+        .organelle-card .fact {
+            font-size: 0.75rem;
+            color: rgba(255,255,255,0.3);
+            font-style: italic;
+            padding-top: 15px;
+            border-top: 1px solid rgba(255,255,255,0.05);
+        }
+
+        /* ===== SIGNALING SECTION ===== */
+        #signaling {
+            background: linear-gradient(180deg, var(--bg-mid) 0%, var(--bg-dark) 100%);
+        }
+
+        .signaling-visual {
+            position: relative;
+            height: 500px;
+            max-width: 1200px;
+            margin: 0 auto 60px;
+        }
+
+        #signalingCanvas {
+            width: 100%;
+            height: 100%;
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .signaling-types {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 30px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .signal-type {
+            padding: 30px;
+            background: rgba(255,255,255,0.02);
+            border: 1px solid rgba(255,255,255,0.08);
+            text-align: center;
+            transition: all 0.4s ease;
+        }
+
+        .signal-type:hover {
+            background: rgba(255,255,255,0.06);
+            transform: translateY(-8px);
+        }
+
+        .signal-type h4 {
+            font-size: 0.85rem;
+            font-weight: 300;
+            letter-spacing: 0.15em;
+            margin-bottom: 15px;
+        }
+
+        .signal-type p {
+            font-size: 0.75rem;
+            line-height: 1.8;
+            color: rgba(255,255,255,0.5);
+        }
+
+        /* ===== EPIGENETICS SECTION ===== */
+        #epigenetics {
+            background: var(--bg-dark);
+        }
+
+        .epigenetics-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 60px;
+            max-width: 1200px;
+            margin: 0 auto;
+            align-items: start;
+        }
+
+        .epigenetics-text h3 {
+            font-size: 1.2rem;
+            font-weight: 200;
+            letter-spacing: 0.2em;
+            margin-bottom: 30px;
+        }
+
+        .epigenetics-text p {
+            font-size: 0.9rem;
+            line-height: 2;
+            color: rgba(255,255,255,0.6);
+            margin-bottom: 25px;
+        }
+
+        .epigenetics-mechanisms {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .mechanism {
+            padding: 30px;
+            background: rgba(255,255,255,0.02);
+            border: 1px solid rgba(255,255,255,0.08);
+            transition: all 0.4s ease;
+        }
+
+        .mechanism:hover {
+            background: rgba(255,255,255,0.06);
+            border-color: rgba(255,255,255,0.15);
+        }
+
+        .mechanism h4 {
+            font-size: 0.9rem;
+            font-weight: 300;
+            letter-spacing: 0.15em;
+            margin-bottom: 12px;
+        }
+
+        .mechanism p {
+            font-size: 0.8rem;
+            line-height: 1.8;
+            color: rgba(255,255,255,0.5);
+        }
+
+        /* ===== TIMELINE SECTION ===== */
+        #timeline {
+            background: linear-gradient(180deg, var(--bg-dark) 0%, var(--bg-mid) 100%);
+            padding-bottom: 150px;
+        }
+
+        .timeline-container {
+            position: relative;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .timeline-line {
+            position: absolute;
+            left: 50%;
+            top: 0;
+            bottom: 0;
+            width: 1px;
+            background: rgba(255,255,255,0.15);
+            transform: translateX(-50%);
+        }
+
+        .timeline-item {
+            display: flex;
+            margin-bottom: 60px;
+            position: relative;
+        }
+
+        .timeline-item:nth-child(odd) {
+            justify-content: flex-start;
+            padding-right: calc(50% + 40px);
+            text-align: right;
+        }
+
+        .timeline-item:nth-child(even) {
+            justify-content: flex-end;
+            padding-left: calc(50% + 40px);
+        }
+
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: 50%;
+            top: 25px;
+            width: 12px;
+            height: 12px;
+            background: var(--bg-dark);
+            border: 1px solid rgba(255,255,255,0.4);
+            transform: translateX(-50%);
+            transition: all 0.3s ease;
+        }
+
+        .timeline-item:hover::before {
+            background: rgba(255,255,255,0.9);
+            border-color: rgba(255,255,255,0.9);
+        }
+
+        .timeline-content {
+            padding: 30px;
+            background: rgba(255,255,255,0.02);
+            border: 1px solid rgba(255,255,255,0.08);
+            transition: all 0.4s ease;
+            max-width: 400px;
+        }
+
+        .timeline-item:hover .timeline-content {
+            background: rgba(255,255,255,0.05);
+            border-color: rgba(255,255,255,0.15);
+        }
+
+        .timeline-year {
+            font-size: 1.8rem;
+            font-weight: 100;
+            color: rgba(255,255,255,0.2);
+            margin-bottom: 15px;
+        }
+
+        .timeline-content h4 {
+            font-size: 0.9rem;
+            font-weight: 300;
+            letter-spacing: 0.15em;
+            margin-bottom: 12px;
+        }
+
+        .timeline-content p {
+            font-size: 0.8rem;
+            line-height: 1.8;
+            color: rgba(255,255,255,0.5);
+        }
+
+        /* ===== QUIZ SECTION ===== */
+        #quiz {
+            background: var(--bg-mid);
+            padding: 100px 5%;
+        }
+
+        .quiz-container {
+            max-width: 700px;
+            margin: 0 auto;
+            text-align: center;
+        }
+
+        .quiz-question {
+            font-size: 1.3rem;
+            font-weight: 200;
+            letter-spacing: 0.1em;
+            margin-bottom: 50px;
+            line-height: 1.6;
+        }
+
+        .quiz-options {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .quiz-option {
+            padding: 20px 30px;
+            background: rgba(255,255,255,0.02);
+            border: 1px solid rgba(255,255,255,0.1);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: left;
+            font-size: 0.9rem;
+            color: rgba(255,255,255,0.7);
+        }
+
+        .quiz-option:hover {
+            background: rgba(255,255,255,0.08);
+            border-color: rgba(255,255,255,0.3);
+            padding-left: 40px;
+        }
+
+        .quiz-option.correct {
+            background: rgba(100,255,100,0.1);
+            border-color: rgba(100,255,100,0.5);
+        }
+
+        .quiz-option.wrong {
+            background: rgba(255,100,100,0.1);
+            border-color: rgba(255,100,100,0.5);
+        }
+
+        .quiz-feedback {
+            margin-top: 30px;
+            padding: 20px;
+            font-size: 0.85rem;
+            display: none;
+        }
+
+        .quiz-feedback.show { display: block; }
+
+        .quiz-nav {
+            margin-top: 40px;
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+        }
+
+        .quiz-btn {
+            padding: 15px 40px;
+            background: transparent;
+            border: 1px solid rgba(255,255,255,0.3);
+            color: rgba(255,255,255,0.7);
+            cursor: pointer;
+            font-size: 0.75rem;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            transition: all 0.3s ease;
+        }
+
+        .quiz-btn:hover {
+            background: rgba(255,255,255,0.9);
+            color: var(--bg-dark);
+        }
+
+        .quiz-progress {
+            margin-top: 40px;
+            font-size: 0.7rem;
+            color: rgba(255,255,255,0.3);
+            letter-spacing: 0.2em;
+        }
+
+        /* ===== STATS SECTION ===== */
+        #stats {
+            background: var(--bg-dark);
+            padding: 100px 5%;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 40px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .stat-card {
+            padding: 50px 30px;
+            background: rgba(255,255,255,0.02);
+            border: 1px solid rgba(255,255,255,0.08);
+            text-align: center;
+            transition: all 0.4s ease;
+        }
+
+        .stat-card:hover {
+            background: rgba(255,255,255,0.05);
+            transform: translateY(-10px);
+        }
+
+        .stat-value {
+            font-size: 3rem;
+            font-weight: 100;
+            margin-bottom: 15px;
+            background: linear-gradient(135deg, rgba(255,255,255,0.9), rgba(255,255,255,0.5));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .stat-label {
+            font-size: 0.7rem;
+            letter-spacing: 0.2em;
+            color: rgba(255,255,255,0.4);
+            text-transform: uppercase;
+        }
+
+        /* ===== FOOTER ===== */
+        footer {
+            padding: 60px 5%;
+            background: var(--bg-dark);
+            border-top: 1px solid rgba(255,255,255,0.08);
+        }
+
+        .footer-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .footer-logo {
+            font-size: 1rem;
+            font-weight: 100;
+            letter-spacing: 0.4em;
+            text-transform: uppercase;
+        }
+
+        .footer-links {
+            display: flex;
+            gap: 30px;
+        }
+
+        .footer-links a {
+            color: rgba(255,255,255,0.4);
+            text-decoration: none;
+            font-size: 0.7rem;
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+            transition: color 0.3s ease;
+        }
+
+        .footer-links a:hover {
+            color: rgba(255,255,255,0.9);
+        }
+
+        /* ===== ANIMATIONS ===== */
+        .fade-in {
+            opacity: 0;
+            transform: translateY(40px);
+            transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .fade-in.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .slide-left {
+            opacity: 0;
+            transform: translateX(-60px);
+            transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .slide-left.visible {
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        .slide-right {
+            opacity: 0;
+            transform: translateX(60px);
+            transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .slide-right.visible {
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        /* ===== RESPONSIVE ===== */
+        @media (max-width: 1024px) {
+            .side-nav { display: none; }
+            .dna-content,
+            .epigenetics-content { grid-template-columns: 1fr; }
+            .cycle-container { flex-direction: column; }
+            .signaling-types { grid-template-columns: repeat(2, 1fr); }
+            .intro-grid { grid-template-columns: 1fr; }
+            .stats-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+
+        @media (max-width: 768px) {
+            .hero-content h1 { font-size: 1.8rem; letter-spacing: 0.3em; }
+            .section-title { font-size: 1.3rem; }
+            .synthesis-flow { flex-direction: column; }
+            .synthesis-step::after { display: none; }
+            .timeline-item:nth-child(odd),
+            .timeline-item:nth-child(even) {
+                padding: 0 0 0 50px;
+                text-align: left;
+            }
+            .timeline-line { left: 20px; }
+            .timeline-item::before { left: 20px; }
+            .signaling-types { grid-template-columns: 1fr; }
+            .stats-grid { grid-template-columns: 1fr; }
+            .footer-content { flex-direction: column; gap: 30px; }
+        }
+    </style>
+</head>
+<body>
+    <!-- Progress Bar -->
+    <div class="progress-bar" id="progressBar"></div>
+
+    <!-- Navigation -->
+    <nav class="main-nav">
+        <a href="index.html" class="nav-link">Evolution</a>
+        <a href="extrarepro.html" class="nav-link active">ExtraRepro</a>
+    </nav>
+
+    <!-- Side Navigation -->
+    <div class="side-nav" id="sideNav">
+        <a href="#hero" class="side-nav-item active" data-label="Start"></a>
+        <a href="#introduction" class="side-nav-item" data-label="Introduction"></a>
+        <a href="#dna-structure" class="side-nav-item" data-label="DNA"></a>
+        <a href="#rna-world" class="side-nav-item" data-label="RNA"></a>
+        <a href="#protein-synthesis" class="side-nav-item" data-label="Proteins"></a>
+        <a href="#cell-cycle" class="side-nav-item" data-label="Cell Cycle"></a>
+        <a href="#organelles" class="side-nav-item" data-label="Organelles"></a>
+        <a href="#signaling" class="side-nav-item" data-label="Signaling"></a>
+        <a href="#epigenetics" class="side-nav-item" data-label="Epigenetics"></a>
+        <a href="#timeline" class="side-nav-item" data-label="History"></a>
+        <a href="#quiz" class="side-nav-item" data-label="Quiz"></a>
+    </div>
+
+    <!-- Controls -->
+    <div class="controls">
+        <button class="control-btn" id="audioToggle" title="Toggle Audio">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <path d="M11 5L6 9H2v6h4l5 4V5z"/>
+                <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/>
+            </svg>
+        </button>
+        <a href="https://github.com/simplexdomus/repro" target="_blank" class="control-btn" title="GitHub">
+            <svg viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/>
+            </svg>
+        </a>
+    </div>
+
+    <!-- ==================== HERO SECTION ==================== -->
+    <section class="hero section" id="hero">
+        <canvas id="heroCanvas"></canvas>
+        <div class="hero-content fade-in">
+            <h1>ExtraRepro</h1>
+            <p class="tagline">Deep Dive into Molecular Biology</p>
+            <p class="intro">
+                Explore the intricate molecular machinery that powers all living organisms. 
+                From the elegant double helix of DNA to the complex dance of protein synthesis, 
+                discover the fundamental processes that define life itself.
+            </p>
+        </div>
+        <div class="scroll-indicator">
+            <span>Explore</span>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M7 13l5 5 5-5M7 6l5 5 5-5"/>
+            </svg>
+        </div>
+    </section>
+
+    <!-- ==================== INTRODUCTION SECTION ==================== -->
+    <section class="section" id="introduction">
+        <div class="section-header fade-in">
+            <div class="section-number">01</div>
+            <h2 class="section-title">The Molecular Basis of Life</h2>
+            <p class="section-subtitle">
+                Understanding how molecules interact to create the complex systems we call living organisms
+            </p>
+        </div>
+
+        <div class="intro-grid">
+            <div class="intro-card fade-in">
+                <svg class="intro-card-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1">
+                    <circle cx="12" cy="12" r="10"/>
+                    <path d="M12 6v6l4 2"/>
+                </svg>
+                <h3>Information</h3>
+                <p>Genetic information flows from DNA to RNA to proteins, following the central dogma of molecular biology. This unidirectional flow ensures accurate transmission of hereditary information.</p>
+            </div>
+            <div class="intro-card fade-in">
+                <svg class="intro-card-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1">
+                    <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+                    <path d="M2 17l10 5 10-5"/>
+                    <path d="M2 12l10 5 10-5"/>
+                </svg>
+                <h3>Structure</h3>
+                <p>Molecular structure determines function. The three-dimensional arrangement of atoms in biological molecules dictates their interactions and roles within the cell.</p>
+            </div>
+            <div class="intro-card fade-in">
+                <svg class="intro-card-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1">
+                    <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
+                </svg>
+                <h3>Energy</h3>
+                <p>Life requires constant energy input. ATP serves as the universal energy currency, powering everything from muscle contraction to DNA replication.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- ==================== DNA STRUCTURE SECTION ==================== -->
+    <section class="section" id="dna-structure">
+        <div class="section-header fade-in">
+            <div class="section-number">02</div>
+            <h2 class="section-title">DNA Structure</h2>
+            <p class="section-subtitle">
+                The double helix — nature's most elegant information storage system
+            </p>
+        </div>
+
+        <div class="dna-content">
+            <div class="dna-visual slide-left">
+                <canvas id="dnaCanvas"></canvas>
+            </div>
+            <div class="dna-info slide-right">
+                <h3>The Blueprint of Life</h3>
+                <p>
+                    Deoxyribonucleic acid (DNA) is a polymer composed of nucleotide units. Each nucleotide contains a phosphate group, a deoxyribose sugar, and one of four nitrogenous bases.
+                </p>
+                <p>
+                    The two strands run antiparallel to each other, with the 5' end of one strand opposite the 3' end of the other. This orientation is crucial for DNA replication and transcription.
+                </p>
+                <p>
+                    Hydrogen bonds between complementary base pairs hold the two strands together: Adenine pairs with Thymine via two hydrogen bonds, while Guanine pairs with Cytosine via three hydrogen bonds.
+                </p>
+
+                <div class="base-pairs">
+                    <div class="base-pair">
+                        <div class="pair">A ═ T</div>
+                        <div class="name">Adenine — Thymine</div>
+                    </div>
+                    <div class="base-pair">
+                        <div class="pair">G ≡ C</div>
+                        <div class="name">Guanine — Cytosine</div>
+                    </div>
+                    <div class="base-pair">
+                        <div class="pair">5' → 3'</div>
+                        <div class="name">Leading Strand</div>
+                    </div>
+                    <div class="base-pair">
+                        <div class="pair">3' ← 5'</div>
+                        <div class="name">Lagging Strand</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ==================== RNA WORLD SECTION ==================== -->
+    <section class="section" id="rna-world">
+        <div class="section-header fade-in">
+            <div class="section-number">03</div>
+            <h2 class="section-title">The RNA World</h2>
+            <p class="section-subtitle">
+                Versatile molecules that serve as messengers, catalysts, and regulators
+            </p>
+        </div>
+
+        <div class="rna-types">
+            <div class="rna-type fade-in">
+                <div class="rna-abbr">mRNA</div>
+                <div class="rna-details">
+                    <h4>Messenger RNA</h4>
+                    <p>Carries genetic information from DNA to ribosomes. Each mRNA molecule encodes the amino acid sequence for a specific protein. Codons (three-nucleotide sequences) specify which amino acid to incorporate.</p>
+                    <p class="function">→ Template for protein synthesis</p>
+                </div>
+            </div>
+            <div class="rna-type fade-in">
+                <div class="rna-abbr">tRNA</div>
+                <div class="rna-details">
+                    <h4>Transfer RNA</h4>
+                    <p>Small adapter molecules that translate the genetic code. Each tRNA carries a specific amino acid and recognizes the corresponding mRNA codon through its anticodon sequence.</p>
+                    <p class="function">→ Amino acid delivery to ribosomes</p>
+                </div>
+            </div>
+            <div class="rna-type fade-in">
+                <div class="rna-abbr">rRNA</div>
+                <div class="rna-details">
+                    <h4>Ribosomal RNA</h4>
+                    <p>The catalytic core of ribosomes. rRNA molecules form complex three-dimensional structures that catalyze peptide bond formation between amino acids during translation.</p>
+                    <p class="function">→ Structural and catalytic ribosome component</p>
+                </div>
+            </div>
+            <div class="rna-type fade-in">
+                <div class="rna-abbr">miRNA</div>
+                <div class="rna-details">
+                    <h4>MicroRNA</h4>
+                    <p>Small non-coding RNAs (~22 nucleotides) that regulate gene expression post-transcriptionally. They bind to complementary sequences in target mRNAs, leading to translational repression or mRNA degradation.</p>
+                    <p class="function">→ Gene expression regulation</p>
+                </div>
+            </div>
+            <div class="rna-type fade-in">
+                <div class="rna-abbr">lncRNA</div>
+                <div class="rna-details">
+                    <h4>Long Non-coding RNA</h4>
+                    <p>Transcripts longer than 200 nucleotides that don't encode proteins. They play diverse roles in chromatin remodeling, transcriptional regulation, and nuclear organization.</p>
+                    <p class="function">→ Epigenetic and transcriptional control</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ==================== PROTEIN SYNTHESIS SECTION ==================== -->
+    <section class="section" id="protein-synthesis">
+        <div class="section-header fade-in">
+            <div class="section-number">04</div>
+            <h2 class="section-title">Protein Synthesis</h2>
+            <p class="section-subtitle">
+                From genetic code to functional molecules
+            </p>
+        </div>
+
+        <div class="synthesis-flow">
+            <div class="synthesis-step fade-in">
+                <div class="step-number">1</div>
+                <h4>Initiation</h4>
+                <p>Ribosome assembles on mRNA at the start codon (AUG). Initiator tRNA carrying methionine binds.</p>
+            </div>
+            <div class="synthesis-step fade-in">
+                <div class="step-number">2</div>
+                <h4>Elongation</h4>
+                <p>tRNAs bring amino acids. Peptide bonds form between adjacent amino acids. Ribosome moves along mRNA.</p>
+            </div>
+            <div class="synthesis-step fade-in">
+                <div class="step-number">3</div>
+                <h4>Termination</h4>
+                <p>Stop codon reached (UAA, UAG, UGA). Release factors trigger polypeptide release.</p>
+            </div>
+            <div class="synthesis-step fade-in">
+                <div class="step-number">4</div>
+                <h4>Folding</h4>
+                <p>Polypeptide folds into functional 3D structure. Chaperones assist proper folding.</p>
+            </div>
+            <div class="synthesis-step fade-in">
+                <div class="step-number">5</div>
+                <h4>Modification</h4>
+                <p>Post-translational modifications add functional groups, cleave segments, or attach molecules.</p>
+            </div>
+        </div>
+
+        <div class="amino-section fade-in">
+            <h3>The 20 Standard Amino Acids</h3>
+            <div class="amino-grid">
+                <div class="amino-acid"><div class="abbr">Ala</div><div class="name">Alanine</div></div>
+                <div class="amino-acid"><div class="abbr">Arg</div><div class="name">Arginine</div></div>
+                <div class="amino-acid"><div class="abbr">Asn</div><div class="name">Asparagine</div></div>
+                <div class="amino-acid"><div class="abbr">Asp</div><div class="name">Aspartic</div></div>
+                <div class="amino-acid"><div class="abbr">Cys</div><div class="name">Cysteine</div></div>
+                <div class="amino-acid"><div class="abbr">Gln</div><div class="name">Glutamine</div></div>
+                <div class="amino-acid"><div class="abbr">Glu</div><div class="name">Glutamic</div></div>
+                <div class="amino-acid"><div class="abbr">Gly</div><div class="name">Glycine</div></div>
+                <div class="amino-acid"><div class="abbr">His</div><div class="name">Histidine</div></div>
+                <div class="amino-acid"><div class="abbr">Ile</div><div class="name">Isoleucine</div></div>
+                <div class="amino-acid"><div class="abbr">Leu</div><div class="name">Leucine</div></div>
+                <div class="amino-acid"><div class="abbr">Lys</div><div class="name">Lysine</div></div>
+                <div class="amino-acid"><div class="abbr">Met</div><div class="name">Methionine</div></div>
+                <div class="amino-acid"><div class="abbr">Phe</div><div class="name">Phenylalanine</div></div>
+                <div class="amino-acid"><div class="abbr">Pro</div><div class="name">Proline</div></div>
+                <div class="amino-acid"><div class="abbr">Ser</div><div class="name">Serine</div></div>
+                <div class="amino-acid"><div class="abbr">Thr</div><div class="name">Threonine</div></div>
+                <div class="amino-acid"><div class="abbr">Trp</div><div class="name">Tryptophan</div></div>
+                <div class="amino-acid"><div class="abbr">Tyr</div><div class="name">Tyrosine</div></div>
+                <div class="amino-acid"><div class="abbr">Val</div><div class="name">Valine</div></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ==================== CELL CYCLE SECTION ==================== -->
+    <section class="section" id="cell-cycle">
+        <div class="section-header fade-in">
+            <div class="section-number">05</div>
+            <h2 class="section-title">The Cell Cycle</h2>
+            <p class="section-subtitle">
+                Orchestrated phases of growth, replication, and division
+            </p>
+        </div>
+
+        <div class="cycle-container">
+            <div class="cycle-visual fade-in">
+                <canvas id="cycleCanvas"></canvas>
+            </div>
+            <div class="cycle-phases slide-right">
+                <div class="phase-item active" data-phase="g1">
+                    <div class="phase-marker">G1</div>
+                    <div class="phase-content">
+                        <h4>Gap 1 Phase</h4>
+                        <p>Cell growth and preparation for DNA synthesis. The cell increases in size and synthesizes proteins needed for S phase.</p>
+                    </div>
+                </div>
+                <div class="phase-item" data-phase="s">
+                    <div class="phase-marker">S</div>
+                    <div class="phase-content">
+                        <h4>Synthesis Phase</h4>
+                        <p>DNA replication occurs. Each chromosome is duplicated, resulting in sister chromatids joined at the centromere.</p>
+                    </div>
+                </div>
+                <div class="phase-item" data-phase="g2">
+                    <div class="phase-marker">G2</div>
+                    <div class="phase-content">
+                        <h4>Gap 2 Phase</h4>
+                        <p>Final preparations for mitosis. The cell continues to grow and produces proteins required for chromosome separation.</p>
+                    </div>
+                </div>
+                <div class="phase-item" data-phase="m">
+                    <div class="phase-marker">M</div>
+                    <div class="phase-content">
+                        <h4>Mitotic Phase</h4>
+                        <p>Nuclear division (mitosis) and cytoplasmic division (cytokinesis). Results in two genetically identical daughter cells.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ==================== ORGANELLES SECTION ==================== -->
+    <section class="section" id="organelles">
+        <div class="section-header fade-in">
+            <div class="section-number">06</div>
+            <h2 class="section-title">Cellular Machinery</h2>
+            <p class="section-subtitle">
+                Specialized compartments that perform essential cellular functions
+            </p>
+        </div>
+
+        <div class="organelle-grid">
+            <div class="organelle-card fade-in">
+                <h4>Nucleus</h4>
+                <p>The control center of the cell, housing the genetic material. Double membrane with nuclear pores allows selective transport of molecules.</p>
+                <div class="fact">Contains approximately 2 meters of DNA packaged into 46 chromosomes</div>
+            </div>
+            <div class="organelle-card fade-in">
+                <h4>Mitochondria</h4>
+                <p>Powerhouses of the cell, producing ATP through oxidative phosphorylation. Contain their own circular DNA and ribosomes.</p>
+                <div class="fact">Generate about 90% of cellular ATP through the electron transport chain</div>
+            </div>
+            <div class="organelle-card fade-in">
+                <h4>Endoplasmic Reticulum</h4>
+                <p>Network of membranes for protein (rough ER) and lipid (smooth ER) synthesis. Connected to the nuclear envelope.</p>
+                <div class="fact">Rough ER can have up to 13 million ribosomes per cell</div>
+            </div>
+            <div class="organelle-card fade-in">
+                <h4>Golgi Apparatus</h4>
+                <p>Processing and packaging center. Modifies proteins and lipids, sorts them, and packages them for transport.</p>
+                <div class="fact">Processes approximately 10,000 protein molecules per minute</div>
+            </div>
+            <div class="organelle-card fade-in">
+                <h4>Lysosomes</h4>
+                <p>Digestive compartments containing hydrolytic enzymes. Break down macromolecules, old organelles, and foreign materials.</p>
+                <div class="fact">Maintain an acidic pH of 4.5-5.0 for optimal enzyme activity</div>
+            </div>
+            <div class="organelle-card fade-in">
+                <h4>Ribosomes</h4>
+                <p>Molecular machines for protein synthesis. Composed of rRNA and proteins, existing free or bound to the ER.</p>
+                <div class="fact">A single cell can contain up to 10 million ribosomes</div>
+            </div>
+            <div class="organelle-card fade-in">
+                <h4>Peroxisomes</h4>
+                <p>Metabolic compartments for oxidation reactions. Detoxify harmful substances and metabolize fatty acids.</p>
+                <div class="fact">Can replicate by division and are imported with peroxisomal proteins</div>
+            </div>
+            <div class="organelle-card fade-in">
+                <h4>Cytoskeleton</h4>
+                <p>Dynamic network of protein filaments. Provides structure, enables movement, and organizes cellular components.</p>
+                <div class="fact">Composed of microtubules, actin filaments, and intermediate filaments</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ==================== SIGNALING SECTION ==================== -->
+    <section class="section" id="signaling">
+        <div class="section-header fade-in">
+            <div class="section-number">07</div>
+            <h2 class="section-title">Cell Signaling</h2>
+            <p class="section-subtitle">
+                How cells communicate and respond to their environment
+            </p>
+        </div>
+
+        <div class="signaling-visual fade-in">
+            <canvas id="signalingCanvas"></canvas>
+        </div>
+
+        <div class="signaling-types">
+            <div class="signal-type fade-in">
+                <h4>Autocrine</h4>
+                <p>Cell signals to itself. The signaling molecule binds to receptors on the same cell that produced it.</p>
+            </div>
+            <div class="signal-type fade-in">
+                <h4>Paracrine</h4>
+                <p>Local signaling to nearby cells. Signal molecules diffuse short distances to reach neighboring target cells.</p>
+            </div>
+            <div class="signal-type fade-in">
+                <h4>Endocrine</h4>
+                <p>Long-distance signaling via bloodstream. Hormones travel throughout the body to reach distant target cells.</p>
+            </div>
+            <div class="signal-type fade-in">
+                <h4>Synaptic</h4>
+                <p>Neural signaling across synapses. Neurotransmitters cross synaptic clefts to signal adjacent neurons.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- ==================== EPIGENETICS SECTION ==================== -->
+    <section class="section" id="epigenetics">
+        <div class="section-header fade-in">
+            <div class="section-number">08</div>
+            <h2 class="section-title">Epigenetics</h2>
+            <p class="section-subtitle">
+                Heritable changes beyond the DNA sequence
+            </p>
+        </div>
+
+        <div class="epigenetics-content">
+            <div class="epigenetics-text slide-left">
+                <h3>Beyond the Genetic Code</h3>
+                <p>
+                    Epigenetics studies heritable changes in gene expression that occur without alterations to the DNA sequence. These modifications act as an additional layer of information on top of the genetic code.
+                </p>
+                <p>
+                    Unlike genetic mutations, epigenetic changes are potentially reversible and can be influenced by environmental factors such as diet, stress, and exposure to toxins.
+                </p>
+                <p>
+                    Epigenetic patterns are established during development and can be maintained through cell division. They play crucial roles in cell differentiation, X-chromosome inactivation, and genomic imprinting.
+                </p>
+                <p>
+                    Dysregulation of epigenetic mechanisms has been implicated in various diseases, including cancer, neurological disorders, and autoimmune conditions.
+                </p>
+            </div>
+            <div class="epigenetics-mechanisms slide-right">
+                <div class="mechanism">
+                    <h4>DNA Methylation</h4>
+                    <p>Addition of methyl groups to cytosine bases, typically at CpG dinucleotides. Generally associated with gene silencing when present in promoter regions.</p>
+                </div>
+                <div class="mechanism">
+                    <h4>Histone Modification</h4>
+                    <p>Chemical modifications to histone proteins (acetylation, methylation, phosphorylation) that alter chromatin structure and gene accessibility.</p>
+                </div>
+                <div class="mechanism">
+                    <h4>Chromatin Remodeling</h4>
+                    <p>ATP-dependent complexes that reposition nucleosomes, making DNA more or less accessible to transcription machinery.</p>
+                </div>
+                <div class="mechanism">
+                    <h4>Non-coding RNAs</h4>
+                    <p>Various RNA molecules that regulate gene expression through RNA interference, chromatin modification, and other mechanisms.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ==================== TIMELINE SECTION ==================== -->
+    <section class="section" id="timeline">
+        <div class="section-header fade-in">
+            <div class="section-number">09</div>
+            <h2 class="section-title">Milestones of Discovery</h2>
+            <p class="section-subtitle">
+                Key moments in the history of molecular biology
+            </p>
+        </div>
+
+        <div class="timeline-container">
+            <div class="timeline-line"></div>
+            
+            <div class="timeline-item fade-in">
+                <div class="timeline-content">
+                    <div class="timeline-year">1869</div>
+                    <h4>DNA Discovered</h4>
+                    <p>Friedrich Miescher isolates "nuclein" from white blood cells, the substance we now know as DNA.</p>
+                </div>
+            </div>
+            
+            <div class="timeline-item fade-in">
+                <div class="timeline-content">
+                    <div class="timeline-year">1944</div>
+                    <h4>DNA as Genetic Material</h4>
+                    <p>Avery, MacLeod, and McCarty demonstrate that DNA, not protein, carries genetic information.</p>
+                </div>
+            </div>
+            
+            <div class="timeline-item fade-in">
+                <div class="timeline-content">
+                    <div class="timeline-year">1953</div>
+                    <h4>Double Helix Structure</h4>
+                    <p>Watson and Crick propose the double helix model for DNA structure, based on X-ray data from Franklin and Wilkins.</p>
+                </div>
+            </div>
+            
+            <div class="timeline-item fade-in">
+                <div class="timeline-content">
+                    <div class="timeline-year">1958</div>
+                    <h4>Central Dogma</h4>
+                    <p>Francis Crick articulates the central dogma of molecular biology: DNA → RNA → Protein.</p>
+                </div>
+            </div>
+            
+            <div class="timeline-item fade-in">
+                <div class="timeline-content">
+                    <div class="timeline-year">1961</div>
+                    <h4>Genetic Code Cracked</h4>
+                    <p>Nirenberg and Matthaei decipher the first codon (UUU for phenylalanine), beginning to crack the genetic code.</p>
+                </div>
+            </div>
+            
+            <div class="timeline-item fade-in">
+                <div class="timeline-content">
+                    <div class="timeline-year">1977</div>
+                    <h4>DNA Sequencing</h4>
+                    <p>Sanger and Gilbert independently develop methods for sequencing DNA, revolutionizing molecular biology.</p>
+                </div>
+            </div>
+            
+            <div class="timeline-item fade-in">
+                <div class="timeline-content">
+                    <div class="timeline-year">1983</div>
+                    <h4>PCR Invented</h4>
+                    <p>Kary Mullis develops the polymerase chain reaction, enabling amplification of specific DNA sequences.</p>
+                </div>
+            </div>
+            
+            <div class="timeline-item fade-in">
+                <div class="timeline-content">
+                    <div class="timeline-year">2003</div>
+                    <h4>Human Genome Complete</h4>
+                    <p>The Human Genome Project completes sequencing of the human genome, identifying ~20,000 genes.</p>
+                </div>
+            </div>
+            
+            <div class="timeline-item fade-in">
+                <div class="timeline-content">
+                    <div class="timeline-year">2012</div>
+                    <h4>CRISPR-Cas9</h4>
+                    <p>Doudna and Charpentier demonstrate CRISPR-Cas9 as a programmable gene-editing tool.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ==================== QUIZ SECTION ==================== -->
+    <section class="section" id="quiz">
+        <div class="section-header fade-in">
+            <div class="section-number">10</div>
+            <h2 class="section-title">Test Your Knowledge</h2>
+            <p class="section-subtitle">
+                Challenge yourself with questions about molecular biology
+            </p>
+        </div>
+
+        <div class="quiz-container fade-in">
+            <div id="quizContent">
+                <p class="quiz-question" id="quizQuestion"></p>
+                <div class="quiz-options" id="quizOptions"></div>
+                <div class="quiz-feedback" id="quizFeedback"></div>
+                <div class="quiz-nav">
+                    <button class="quiz-btn" id="nextBtn" style="display: none;">Next Question</button>
+                    <button class="quiz-btn" id="restartBtn" style="display: none;">Restart Quiz</button>
+                </div>
+                <div class="quiz-progress" id="quizProgress"></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ==================== STATS SECTION ==================== -->
+    <section id="stats">
+        <div class="stats-grid">
+            <div class="stat-card fade-in">
+                <div class="stat-value">3.2B</div>
+                <div class="stat-label">Base Pairs in Human DNA</div>
+            </div>
+            <div class="stat-card fade-in">
+                <div class="stat-value">~20K</div>
+                <div class="stat-label">Protein-Coding Genes</div>
+            </div>
+            <div class="stat-card fade-in">
+                <div class="stat-value">37T</div>
+                <div class="stat-label">Cells in Human Body</div>
+            </div>
+            <div class="stat-card fade-in">
+                <div class="stat-value">2m</div>
+                <div class="stat-label">DNA Length per Cell</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ==================== FOOTER ==================== -->
+    <footer>
+        <div class="footer-content">
+            <div class="footer-logo">ExtraRepro</div>
+            <div class="footer-links">
+                <a href="index.html">Evolution</a>
+                <a href="#hero">Back to Top</a>
+                <a href="https://github.com/simplexdomus/repro" target="_blank">GitHub</a>
+            </div>
+        </div>
+    </footer>
+
+    <!-- ==================== JAVASCRIPT ==================== -->
+    <script>
+        // ===== AUDIO SYSTEM =====
+        let audioContext = null;
+        let isAudioPlaying = false;
+        let audioNodes = [];
+
+        function initAudio() {
+            if (audioContext) return;
+            audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            
+            const masterGain = audioContext.createGain();
+            masterGain.gain.value = 0.12;
+            masterGain.connect(audioContext.destination);
+
+            const padFreqs = [82.41, 123.47, 164.81, 246.94];
+            padFreqs.forEach((freq, i) => {
+                const osc = audioContext.createOscillator();
+                const gain = audioContext.createGain();
+                const filter = audioContext.createBiquadFilter();
+                
+                osc.type = 'sine';
+                osc.frequency.value = freq;
+                filter.type = 'lowpass';
+                filter.frequency.value = 600;
+                gain.gain.value = 0;
+                
+                osc.connect(filter);
+                filter.connect(gain);
+                gain.connect(masterGain);
+                osc.start();
+                
+                audioNodes.push({ osc, gain, filter, baseFreq: freq });
+                
+                setInterval(() => {
+                    if (isAudioPlaying) {
+                        const targetGain = 0.08 + Math.random() * 0.12;
+                        gain.gain.linearRampToValueAtTime(targetGain, audioContext.currentTime + 4);
+                    }
+                }, 5000 + i * 1500);
+            });
+        }
+
+        function toggleAudio() {
+            if (!audioContext) initAudio();
+            isAudioPlaying = !isAudioPlaying;
+            const btn = document.getElementById('audioToggle');
+            
+            if (isAudioPlaying) {
+                audioContext.resume();
+                btn.classList.add('active');
+                audioNodes.forEach(node => {
+                    node.gain.gain.linearRampToValueAtTime(0.1, audioContext.currentTime + 1);
+                });
+            } else {
+                btn.classList.remove('active');
+                audioNodes.forEach(node => {
+                    node.gain.gain.linearRampToValueAtTime(0, audioContext.currentTime + 0.5);
+                });
+            }
+        }
+
+        document.getElementById('audioToggle').addEventListener('click', toggleAudio);
+
+        // ===== PROGRESS BAR =====
+        window.addEventListener('scroll', () => {
+            const scrollTop = window.scrollY;
+            const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+            const progress = (scrollTop / docHeight) * 100;
+            document.getElementById('progressBar').style.width = progress + '%';
+        });
+
+        // ===== SIDE NAVIGATION =====
+        const sections = document.querySelectorAll('.section');
+        const sideNavItems = document.querySelectorAll('.side-nav-item');
+
+        const sectionObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    const sectionId = entry.target.id;
+                    sideNavItems.forEach(item => {
+                        item.classList.remove('active');
+                        if (item.getAttribute('href') === '#' + sectionId) {
+                            item.classList.add('active');
+                        }
+                    });
+                }
+            });
+        }, { threshold: 0.3 });
+
+        sections.forEach(section => sectionObserver.observe(section));
+
+        // ===== SCROLL ANIMATIONS =====
+        const animatedElements = document.querySelectorAll('.fade-in, .slide-left, .slide-right');
+        
+        const animationObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                }
+            });
+        }, { threshold: 0.1, rootMargin: '0px 0px -50px 0px' });
+
+        animatedElements.forEach(el => animationObserver.observe(el));
+
+        // ===== HERO CANVAS ANIMATION =====
+        const heroCanvas = document.getElementById('heroCanvas');
+        const heroCtx = heroCanvas.getContext('2d');
+
+        function resizeHeroCanvas() {
+            heroCanvas.width = window.innerWidth;
+            heroCanvas.height = window.innerHeight;
+        }
+        resizeHeroCanvas();
+        window.addEventListener('resize', resizeHeroCanvas);
+
+        class Particle {
+            constructor() {
+                this.reset();
+            }
+            
+            reset() {
+                this.x = Math.random() * heroCanvas.width;
+                this.y = Math.random() * heroCanvas.height;
+                this.vx = (Math.random() - 0.5) * 0.3;
+                this.vy = (Math.random() - 0.5) * 0.3;
+                this.radius = 1 + Math.random() * 2;
+                this.alpha = 0.3 + Math.random() * 0.4;
+            }
+
+            update() {
+                this.x += this.vx;
+                this.y += this.vy;
+                if (this.x < 0 || this.x > heroCanvas.width) this.vx *= -1;
+                if (this.y < 0 || this.y > heroCanvas.height) this.vy *= -1;
+            }
+
+            draw() {
+                heroCtx.beginPath();
+                heroCtx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                heroCtx.fillStyle = `rgba(255, 255, 255, ${this.alpha})`;
+                heroCtx.fill();
+            }
+        }
+
+        const particles = Array.from({ length: 100 }, () => new Particle());
+
+        function animateHero() {
+            heroCtx.fillStyle = 'rgba(0, 0, 0, 0.05)';
+            heroCtx.fillRect(0, 0, heroCanvas.width, heroCanvas.height);
+
+            particles.forEach((p, i) => {
+                particles.slice(i + 1).forEach(other => {
+                    const dx = other.x - p.x;
+                    const dy = other.y - p.y;
+                    const dist = Math.sqrt(dx * dx + dy * dy);
+                    if (dist < 120) {
+                        heroCtx.beginPath();
+                        heroCtx.moveTo(p.x, p.y);
+                        heroCtx.lineTo(other.x, other.y);
+                        heroCtx.strokeStyle = `rgba(255, 255, 255, ${0.15 * (1 - dist / 120)})`;
+                        heroCtx.lineWidth = 0.5;
+                        heroCtx.stroke();
+                    }
+                });
+                p.update();
+                p.draw();
+            });
+
+            requestAnimationFrame(animateHero);
+        }
+        animateHero();
+
+        // ===== DNA CANVAS ANIMATION =====
+        const dnaCanvas = document.getElementById('dnaCanvas');
+        const dnaCtx = dnaCanvas.getContext('2d');
+        let dnaTime = 0;
+
+        function resizeDnaCanvas() {
+            const container = dnaCanvas.parentElement;
+            dnaCanvas.width = container.offsetWidth;
+            dnaCanvas.height = container.offsetHeight;
+        }
+        resizeDnaCanvas();
+        window.addEventListener('resize', resizeDnaCanvas);
+
+        function drawDNA() {
+            dnaCtx.fillStyle = 'rgba(10, 10, 10, 0.1)';
+            dnaCtx.fillRect(0, 0, dnaCanvas.width, dnaCanvas.height);
+
+            const centerX = dnaCanvas.width / 2;
+            const amplitude = Math.min(100, dnaCanvas.width / 4);
+            const spacing = 25;
+
+            for (let y = -50; y < dnaCanvas.height + 50; y += spacing) {
+                const adjustedY = y + dnaTime * 30;
+                const x1 = centerX + Math.sin(adjustedY * 0.025) * amplitude;
+                const x2 = centerX - Math.sin(adjustedY * 0.025) * amplitude;
+                const depth = Math.cos(adjustedY * 0.025);
+
+                if (depth > 0) {
+                    dnaCtx.beginPath();
+                    dnaCtx.moveTo(x1, y);
+                    dnaCtx.lineTo(x2, y);
+                    dnaCtx.strokeStyle = `rgba(255, 255, 255, ${0.08 + depth * 0.08})`;
+                    dnaCtx.lineWidth = 1.5;
+                    dnaCtx.stroke();
+                }
+
+                const alpha1 = 0.2 + (depth + 1) * 0.25;
+                const alpha2 = 0.2 + (-depth + 1) * 0.25;
+
+                dnaCtx.beginPath();
+                dnaCtx.arc(x1, y, 3, 0, Math.PI * 2);
+                dnaCtx.fillStyle = `rgba(255, 255, 255, ${alpha1})`;
+                dnaCtx.fill();
+
+                dnaCtx.beginPath();
+                dnaCtx.arc(x2, y, 3, 0, Math.PI * 2);
+                dnaCtx.fillStyle = `rgba(255, 255, 255, ${alpha2})`;
+                dnaCtx.fill();
+            }
+
+            dnaTime += 0.015;
+            requestAnimationFrame(drawDNA);
+        }
+        drawDNA();
+
+        // ===== CELL CYCLE CANVAS =====
+        const cycleCanvas = document.getElementById('cycleCanvas');
+        const cycleCtx = cycleCanvas.getContext('2d');
+        let cycleAngle = 0;
+
+        function resizeCycleCanvas() {
+            const container = cycleCanvas.parentElement;
+            cycleCanvas.width = container.offsetWidth;
+            cycleCanvas.height = container.offsetHeight;
+        }
+        resizeCycleCanvas();
+        window.addEventListener('resize', resizeCycleCanvas);
+
+        function drawCycle() {
+            cycleCtx.fillStyle = 'rgba(10, 10, 10, 0.05)';
+            cycleCtx.fillRect(0, 0, cycleCanvas.width, cycleCanvas.height);
+
+            const cx = cycleCanvas.width / 2;
+            const cy = cycleCanvas.height / 2;
+            const radius = Math.min(cycleCanvas.width, cycleCanvas.height) / 2.5;
+
+            // Draw cycle circle
+            cycleCtx.beginPath();
+            cycleCtx.arc(cx, cy, radius, 0, Math.PI * 2);
+            cycleCtx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
+            cycleCtx.lineWidth = 2;
+            cycleCtx.stroke();
+
+            // Draw phases
+            const phases = ['G1', 'S', 'G2', 'M'];
+            const colors = [0.4, 0.6, 0.4, 0.8];
+            phases.forEach((phase, i) => {
+                const angle = (i / 4) * Math.PI * 2 - Math.PI / 2;
+                const x = cx + Math.cos(angle) * radius;
+                const y = cy + Math.sin(angle) * radius;
+
+                cycleCtx.beginPath();
+                cycleCtx.arc(x, y, 20, 0, Math.PI * 2);
+                cycleCtx.fillStyle = `rgba(255, 255, 255, ${colors[i]})`;
+                cycleCtx.fill();
+
+                cycleCtx.font = '10px system-ui';
+                cycleCtx.fillStyle = i === 3 ? 'rgba(0,0,0,0.8)' : 'rgba(255,255,255,0.8)';
+                cycleCtx.textAlign = 'center';
+                cycleCtx.textBaseline = 'middle';
+                cycleCtx.fillText(phase, x, y);
+            });
+
+            // Rotating indicator
+            const indicatorAngle = cycleAngle;
+            const ix = cx + Math.cos(indicatorAngle) * (radius - 40);
+            const iy = cy + Math.sin(indicatorAngle) * (radius - 40);
+
+            cycleCtx.beginPath();
+            cycleCtx.arc(ix, iy, 5, 0, Math.PI * 2);
+            cycleCtx.fillStyle = 'rgba(255, 255, 255, 0.9)';
+            cycleCtx.fill();
+
+            cycleAngle += 0.005;
+            requestAnimationFrame(drawCycle);
+        }
+        drawCycle();
+
+        // ===== SIGNALING CANVAS =====
+        const signalingCanvas = document.getElementById('signalingCanvas');
+        const sigCtx = signalingCanvas.getContext('2d');
+
+        function resizeSignalingCanvas() {
+            const container = signalingCanvas.parentElement;
+            signalingCanvas.width = container.offsetWidth;
+            signalingCanvas.height = container.offsetHeight;
+        }
+        resizeSignalingCanvas();
+        window.addEventListener('resize', resizeSignalingCanvas);
+
+        class Signal {
+            constructor() {
+                this.reset();
+            }
+
+            reset() {
+                this.x = Math.random() * signalingCanvas.width;
+                this.y = signalingCanvas.height + 10;
+                this.targetX = Math.random() * signalingCanvas.width;
+                this.targetY = Math.random() * signalingCanvas.height * 0.5;
+                this.speed = 1 + Math.random() * 2;
+                this.size = 2 + Math.random() * 3;
+                this.alpha = 0.5 + Math.random() * 0.5;
+                this.trail = [];
+            }
+
+            update() {
+                const dx = this.targetX - this.x;
+                const dy = this.targetY - this.y;
+                const dist = Math.sqrt(dx * dx + dy * dy);
+
+                if (dist < 5) {
+                    this.reset();
+                    return;
+                }
+
+                this.trail.push({ x: this.x, y: this.y });
+                if (this.trail.length > 20) this.trail.shift();
+
+                this.x += (dx / dist) * this.speed;
+                this.y += (dy / dist) * this.speed;
+            }
+
+            draw() {
+                // Draw trail
+                this.trail.forEach((point, i) => {
+                    const alpha = (i / this.trail.length) * this.alpha * 0.3;
+                    sigCtx.beginPath();
+                    sigCtx.arc(point.x, point.y, this.size * 0.5, 0, Math.PI * 2);
+                    sigCtx.fillStyle = `rgba(255, 255, 255, ${alpha})`;
+                    sigCtx.fill();
+                });
+
+                // Draw signal
+                sigCtx.beginPath();
+                sigCtx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                sigCtx.fillStyle = `rgba(255, 255, 255, ${this.alpha})`;
+                sigCtx.fill();
+            }
+        }
+
+        const signals = Array.from({ length: 30 }, () => new Signal());
+
+        function animateSignaling() {
+            sigCtx.fillStyle = 'rgba(0, 0, 0, 0.1)';
+            sigCtx.fillRect(0, 0, signalingCanvas.width, signalingCanvas.height);
+
+            // Draw receptor cells at top
+            for (let i = 0; i < 5; i++) {
+                const x = (signalingCanvas.width / 6) * (i + 1);
+                sigCtx.beginPath();
+                sigCtx.arc(x, 50, 30, 0, Math.PI * 2);
+                sigCtx.strokeStyle = 'rgba(255, 255, 255, 0.2)';
+                sigCtx.lineWidth = 1;
+                sigCtx.stroke();
+            }
+
+            signals.forEach(s => {
+                s.update();
+                s.draw();
+            });
+
+            requestAnimationFrame(animateSignaling);
+        }
+        animateSignaling();
+
+        // ===== QUIZ SYSTEM =====
+        const quizData = [
+            {
+                question: "What is the complementary base pair for Adenine?",
+                options: ["Cytosine", "Guanine", "Thymine", "Uracil"],
+                correct: 2,
+                explanation: "Adenine pairs with Thymine in DNA through two hydrogen bonds."
+            },
+            {
+                question: "Which RNA type carries genetic information from DNA to ribosomes?",
+                options: ["tRNA", "rRNA", "mRNA", "miRNA"],
+                correct: 2,
+                explanation: "Messenger RNA (mRNA) carries the genetic code from DNA to the ribosome for protein synthesis."
+            },
+            {
+                question: "During which phase of the cell cycle does DNA replication occur?",
+                options: ["G1 Phase", "S Phase", "G2 Phase", "M Phase"],
+                correct: 1,
+                explanation: "DNA synthesis (replication) occurs during the S (Synthesis) phase of the cell cycle."
+            },
+            {
+                question: "Which organelle is known as the 'powerhouse of the cell'?",
+                options: ["Nucleus", "Ribosome", "Mitochondria", "Golgi Apparatus"],
+                correct: 2,
+                explanation: "Mitochondria produce most of the cell's ATP through oxidative phosphorylation."
+            },
+            {
+                question: "What does the start codon (AUG) code for?",
+                options: ["Alanine", "Methionine", "Glycine", "Stop signal"],
+                correct: 1,
+                explanation: "AUG is the universal start codon and codes for the amino acid methionine."
+            },
+            {
+                question: "Who discovered the double helix structure of DNA?",
+                options: ["Mendel & Darwin", "Watson & Crick", "Avery & McCarty", "Sanger & Gilbert"],
+                correct: 1,
+                explanation: "James Watson and Francis Crick proposed the double helix model in 1953, based on X-ray data from Rosalind Franklin."
+            },
+            {
+                question: "Which epigenetic modification is associated with gene silencing?",
+                options: ["Histone acetylation", "DNA methylation", "Chromatin decondensation", "Transcription activation"],
+                correct: 1,
+                explanation: "DNA methylation at promoter regions typically silences gene expression by blocking transcription factor binding."
+            },
+            {
+                question: "How many base pairs are in the human genome?",
+                options: ["3.2 million", "3.2 billion", "32 billion", "320 million"],
+                correct: 1,
+                explanation: "The human genome contains approximately 3.2 billion base pairs distributed across 23 chromosome pairs."
+            }
+        ];
+
+        let currentQuestion = 0;
+        let score = 0;
+        let answered = false;
+
+        function loadQuestion() {
+            answered = false;
+            const q = quizData[currentQuestion];
+            document.getElementById('quizQuestion').textContent = q.question;
+            
+            const optionsContainer = document.getElementById('quizOptions');
+            optionsContainer.innerHTML = '';
+            
+            q.options.forEach((option, i) => {
+                const btn = document.createElement('div');
+                btn.className = 'quiz-option';
+                btn.textContent = option;
+                btn.onclick = () => selectAnswer(i);
+                optionsContainer.appendChild(btn);
+            });
+
+            document.getElementById('quizFeedback').classList.remove('show');
+            document.getElementById('nextBtn').style.display = 'none';
+            document.getElementById('restartBtn').style.display = 'none';
+            document.getElementById('quizProgress').textContent = `Question ${currentQuestion + 1} of ${quizData.length}`;
+        }
+
+        function selectAnswer(index) {
+            if (answered) return;
+            answered = true;
+
+            const q = quizData[currentQuestion];
+            const options = document.querySelectorAll('.quiz-option');
+            
+            options.forEach((opt, i) => {
+                if (i === q.correct) opt.classList.add('correct');
+                else if (i === index) opt.classList.add('wrong');
+            });
+
+            if (index === q.correct) score++;
+
+            const feedback = document.getElementById('quizFeedback');
+            feedback.textContent = q.explanation;
+            feedback.classList.add('show');
+            feedback.style.color = index === q.correct ? 'rgba(100, 255, 100, 0.8)' : 'rgba(255, 100, 100, 0.8)';
+
+            if (currentQuestion < quizData.length - 1) {
+                document.getElementById('nextBtn').style.display = 'inline-block';
+            } else {
+                document.getElementById('quizProgress').textContent = `Final Score: ${score} / ${quizData.length}`;
+                document.getElementById('restartBtn').style.display = 'inline-block';
+            }
+        }
+
+        document.getElementById('nextBtn').onclick = () => {
+            currentQuestion++;
+            loadQuestion();
+        };
+
+        document.getElementById('restartBtn').onclick = () => {
+            currentQuestion = 0;
+            score = 0;
+            loadQuestion();
+        };
+
+        loadQuestion();
+
+        // ===== PHASE ITEM INTERACTION =====
+        document.querySelectorAll('.phase-item').forEach(item => {
+            item.addEventListener('click', () => {
+                document.querySelectorAll('.phase-item').forEach(i => i.classList.remove('active'));
+                item.classList.add('active');
+            });
+        });
+    </script>
+</body>
+</html>
