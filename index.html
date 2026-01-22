@@ -1,16 +1,16 @@
 <!DOCTYPE html>
-<html lang="de">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Zelluläre Evolution | Technische Visualisierung</title>
+    <title>Cellular Evolution | Technical Visualization</title>
     <style>
         :root {
-            --primary: #00f5ff;
-            --secondary: #ff00ff;
-            --tertiary: #00ff88;
-            --bg-dark: #0a0a0f;
-            --bg-mid: #12121a;
+            --primary: #ffffff;
+            --secondary: rgba(255,255,255,0.6);
+            --tertiary: rgba(255,255,255,0.4);
+            --bg-dark: #000000;
+            --bg-mid: #0a0a0a;
         }
 
         * {
@@ -45,34 +45,65 @@
         }
 
         .hero-content {
-            z-index: 10;
-            text-align: center;
-            padding: 2rem;
+            display: none;
         }
 
-        h1 {
-            font-size: clamp(2rem, 8vw, 5rem);
-            font-weight: 200;
-            letter-spacing: 0.3em;
+        .title-bar {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 100;
+            text-align: center;
+            padding: 20px 50px;
+            background: rgba(0,0,0,0.8);
+            border: 1px solid rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
+            transition: opacity 0.5s ease, transform 0.5s ease;
+        }
+
+        .title-bar.hidden {
+            opacity: 0;
+            transform: translateX(-50%) translateY(20px);
+            pointer-events: none;
+        }
+
+        .title-bar h1 {
+            font-size: 1.8rem;
+            font-weight: 100;
+            letter-spacing: 0.5em;
             text-transform: uppercase;
-            background: linear-gradient(135deg, var(--primary), var(--secondary));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            margin-bottom: 1rem;
-            animation: pulse 4s ease-in-out infinite;
+            color: rgba(255,255,255,0.9);
+            margin: 0 0 8px 0;
+        }
+
+        .title-bar .subtitle {
+            font-size: 0.7rem;
+            color: rgba(255,255,255,0.4);
+            letter-spacing: 0.4em;
+            text-transform: uppercase;
+            margin: 0;
+        }
+
+        .scroll-arrow {
+            margin-top: 15px;
+            animation: bounce 2s infinite;
+        }
+
+        .scroll-arrow svg {
+            width: 20px;
+            height: 20px;
+            stroke: rgba(255,255,255,0.3);
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(5px); }
         }
 
         @keyframes pulse {
             0%, 100% { opacity: 0.8; }
             50% { opacity: 1; }
-        }
-
-        .subtitle {
-            font-size: 1.2rem;
-            color: rgba(255,255,255,0.6);
-            letter-spacing: 0.5em;
-            text-transform: uppercase;
         }
 
         .controls {
@@ -87,9 +118,9 @@
         .control-btn {
             width: 50px;
             height: 50px;
-            border: 1px solid var(--primary);
-            background: rgba(0, 245, 255, 0.1);
-            color: var(--primary);
+            border: 1px solid rgba(255,255,255,0.3);
+            background: rgba(255,255,255,0.05);
+            color: rgba(255,255,255,0.7);
             border-radius: 50%;
             cursor: pointer;
             transition: all 0.3s ease;
@@ -100,13 +131,13 @@
         }
 
         .control-btn:hover {
-            background: rgba(0, 245, 255, 0.3);
-            box-shadow: 0 0 20px rgba(0, 245, 255, 0.5);
+            background: rgba(255,255,255,0.15);
+            border-color: rgba(255,255,255,0.5);
             transform: scale(1.1);
         }
 
         .control-btn.active {
-            background: var(--primary);
+            background: rgba(255,255,255,0.9);
             color: var(--bg-dark);
         }
 
@@ -124,11 +155,12 @@
 
         .section-title {
             text-align: center;
-            font-size: 2.5rem;
-            font-weight: 200;
-            letter-spacing: 0.2em;
+            font-size: 1.8rem;
+            font-weight: 100;
+            letter-spacing: 0.4em;
             margin-bottom: 4rem;
-            color: var(--primary);
+            color: rgba(255,255,255,0.7);
+            text-transform: uppercase;
         }
 
         .timeline {
@@ -142,10 +174,9 @@
             position: absolute;
             left: 50%;
             transform: translateX(-50%);
-            width: 2px;
+            width: 1px;
             height: 100%;
-            background: linear-gradient(180deg, var(--primary), var(--secondary), var(--tertiary));
-            box-shadow: 0 0 20px var(--primary);
+            background: rgba(255,255,255,0.2);
         }
 
         .timeline-item {
@@ -176,31 +207,28 @@
         }
 
         .timeline-content {
-            background: rgba(255,255,255,0.03);
-            border: 1px solid rgba(0, 245, 255, 0.2);
-            border-radius: 10px;
-            padding: 30px;
+            background: transparent;
+            border: none;
+            border-left: 1px solid rgba(255,255,255,0.1);
+            border-radius: 0;
+            padding: 20px 30px;
             max-width: 400px;
             position: relative;
-            backdrop-filter: blur(10px);
             transition: all 0.3s ease;
         }
 
         .timeline-content:hover {
-            border-color: var(--primary);
-            box-shadow: 0 0 30px rgba(0, 245, 255, 0.2);
-            transform: scale(1.02);
+            border-left-color: rgba(255,255,255,0.4);
         }
 
         .timeline-dot {
             position: absolute;
-            right: -9px;
-            top: 30px;
-            width: 16px;
-            height: 16px;
-            background: var(--primary);
+            right: -5px;
+            top: 25px;
+            width: 8px;
+            height: 8px;
+            background: rgba(255,255,255,0.6);
             border-radius: 50%;
-            box-shadow: 0 0 20px var(--primary);
         }
 
         .timeline-item:nth-child(even) .timeline-dot {
@@ -217,18 +245,18 @@
         }
 
         .era {
-            font-size: 0.8rem;
-            color: var(--secondary);
-            letter-spacing: 0.2em;
+            font-size: 0.7rem;
+            color: rgba(255,255,255,0.4);
+            letter-spacing: 0.3em;
             text-transform: uppercase;
             margin-bottom: 10px;
         }
 
         .timeline-content h3 {
-            font-size: 1.4rem;
-            font-weight: 400;
+            font-size: 1.2rem;
+            font-weight: 300;
             margin-bottom: 15px;
-            color: var(--tertiary);
+            color: rgba(255,255,255,0.9);
         }
 
         .timeline-content p {
@@ -256,18 +284,17 @@
         .phase-card {
             width: 280px;
             padding: 30px;
-            background: rgba(0,0,0,0.3);
-            border: 1px solid rgba(255, 0, 255, 0.2);
-            border-radius: 15px;
+            background: transparent;
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 2px;
             text-align: center;
             transition: all 0.5s ease;
             cursor: pointer;
         }
 
         .phase-card:hover, .phase-card.active {
-            border-color: var(--secondary);
-            box-shadow: 0 0 40px rgba(255, 0, 255, 0.3);
-            transform: translateY(-10px);
+            border-color: rgba(255,255,255,0.4);
+            background: rgba(255,255,255,0.03);
         }
 
         .phase-visual {
@@ -278,11 +305,12 @@
         }
 
         .phase-card h4 {
-            font-size: 1.3rem;
-            font-weight: 400;
-            color: var(--secondary);
+            font-size: 1.1rem;
+            font-weight: 300;
+            color: rgba(255,255,255,0.8);
             margin-bottom: 10px;
-            letter-spacing: 0.1em;
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
         }
 
         .phase-card p {
@@ -294,9 +322,9 @@
         #divisionCanvas {
             display: block;
             margin: 50px auto;
-            border: 1px solid rgba(0, 245, 255, 0.2);
-            border-radius: 20px;
-            background: rgba(0,0,0,0.5);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 0;
+            background: transparent;
         }
 
         .phase-controls {
@@ -308,77 +336,27 @@
         }
 
         .phase-btn {
-            padding: 12px 25px;
+            padding: 10px 20px;
             background: transparent;
-            border: 1px solid var(--tertiary);
-            color: var(--tertiary);
-            border-radius: 25px;
+            border: 1px solid rgba(255,255,255,0.2);
+            color: rgba(255,255,255,0.5);
+            border-radius: 0;
             cursor: pointer;
-            font-size: 0.9rem;
-            letter-spacing: 0.1em;
+            font-size: 0.8rem;
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
             transition: all 0.3s ease;
         }
 
         .phase-btn:hover, .phase-btn.active {
-            background: var(--tertiary);
-            color: var(--bg-dark);
-            box-shadow: 0 0 20px rgba(0, 255, 136, 0.5);
+            background: rgba(255,255,255,0.1);
+            color: rgba(255,255,255,0.9);
+            border-color: rgba(255,255,255,0.4);
         }
 
-        .stats-bar {
-            position: fixed;
-            bottom: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: rgba(10, 10, 15, 0.9);
-            border: 1px solid rgba(0, 245, 255, 0.3);
-            border-radius: 30px;
-            padding: 15px 30px;
-            display: flex;
-            gap: 40px;
-            z-index: 100;
-            backdrop-filter: blur(10px);
-        }
+        
 
-        .stat {
-            text-align: center;
-        }
-
-        .stat-value {
-            font-size: 1.5rem;
-            font-weight: 300;
-            color: var(--primary);
-            font-family: 'Courier New', monospace;
-        }
-
-        .stat-label {
-            font-size: 0.7rem;
-            color: rgba(255,255,255,0.5);
-            letter-spacing: 0.15em;
-            text-transform: uppercase;
-            margin-top: 5px;
-        }
-
-        .scroll-indicator {
-            position: absolute;
-            bottom: 40px;
-            left: 50%;
-            transform: translateX(-50%);
-            z-index: 10;
-            animation: bounce 2s infinite;
-        }
-
-        @keyframes bounce {
-            0%, 100% { transform: translateX(-50%) translateY(0); }
-            50% { transform: translateX(-50%) translateY(10px); }
-        }
-
-        .scroll-indicator svg {
-            width: 30px;
-            height: 30px;
-            stroke: var(--primary);
-            opacity: 0.6;
-        }
+        
 
         .volume-slider {
             position: fixed;
@@ -390,9 +368,9 @@
             align-items: center;
             gap: 10px;
             padding: 15px;
-            background: rgba(10, 10, 15, 0.9);
-            border: 1px solid var(--primary);
-            border-radius: 25px;
+            background: rgba(0,0,0,0.9);
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 0;
             backdrop-filter: blur(10px);
         }
 
@@ -403,20 +381,19 @@
         .volume-slider input {
             -webkit-appearance: none;
             width: 100px;
-            height: 4px;
-            background: rgba(0, 245, 255, 0.3);
-            border-radius: 2px;
+            height: 1px;
+            background: rgba(255,255,255,0.3);
+            border-radius: 0;
             outline: none;
         }
 
         .volume-slider input::-webkit-slider-thumb {
             -webkit-appearance: none;
-            width: 16px;
-            height: 16px;
-            background: var(--primary);
-            border-radius: 50%;
+            width: 12px;
+            height: 12px;
+            background: rgba(255,255,255,0.8);
+            border-radius: 0;
             cursor: pointer;
-            box-shadow: 0 0 10px var(--primary);
         }
 
         footer {
@@ -452,20 +429,25 @@
                 margin-right: 0;
             }
 
-            .stats-bar {
-                gap: 20px;
-                padding: 10px 20px;
+            .title-bar {
+                padding: 15px 30px;
             }
 
-            .stat-value {
-                font-size: 1.2rem;
+            .title-bar h1 {
+                font-size: 1.4rem;
+                letter-spacing: 0.3em;
             }
         }
     </style>
 </head>
 <body>
     <div class="controls">
-        <button class="control-btn" id="musicBtn" title="Musik">
+        <a href="https://github.com/simplexdomus/repro" target="_blank" rel="noopener" class="control-btn" title="GitHub Repository">
+            <svg viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/>
+            </svg>
+        </a>
+        <button class="control-btn" id="musicBtn" title="Music">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M9 18V5l12-2v13"/>
                 <circle cx="6" cy="18" r="3"/>
@@ -481,95 +463,86 @@
     </div>
 
     <div class="volume-slider" id="volumeSlider">
-        <span style="font-size: 0.7rem; color: var(--primary);">VOLUMEN</span>
+        <span style="font-size: 0.7rem; color: var(--primary);">VOLUME</span>
         <input type="range" id="volumeControl" min="0" max="100" value="30">
     </div>
 
     <section class="hero">
         <canvas id="cellCanvas"></canvas>
-        <div class="hero-content">
-            <h1>Evolution</h1>
-            <p class="subtitle">Zelluläre Transformation</p>
-        </div>
-        <div class="scroll-indicator">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M12 5v14M19 12l-7 7-7-7"/>
-            </svg>
-        </div>
     </section>
 
     <section class="timeline-section">
-        <h2 class="section-title">Evolutionäre Zeitleiste</h2>
+        <h2 class="section-title">Evolutionary Timeline</h2>
         <div class="timeline">
             <div class="timeline-item">
                 <div class="timeline-content">
                     <div class="timeline-dot"></div>
-                    <span class="era">4.5 Milliarden Jahre</span>
-                    <h3>Entstehung der Erde</h3>
-                    <p>Formation des Planeten aus kosmischem Staub. Entstehung der Ursuppe mit organischen Molekülen.</p>
+                    <span class="era">4.5 Billion Years Ago</span>
+                    <h3>Formation of Earth</h3>
+                    <p>Planet formation from cosmic dust. Emergence of primordial soup containing organic molecules.</p>
                 </div>
             </div>
             <div class="timeline-item">
                 <div class="timeline-content">
                     <div class="timeline-dot"></div>
-                    <span class="era">3.8 Milliarden Jahre</span>
-                    <h3>Erste Prokaryoten</h3>
-                    <p>Entstehung primitiver Zellen ohne Zellkern. Bakterien und Archaeen dominieren die Ozeane.</p>
+                    <span class="era">3.8 Billion Years Ago</span>
+                    <h3>First Prokaryotes</h3>
+                    <p>Emergence of primitive cells without nucleus. Bacteria and archaea dominate the oceans.</p>
                 </div>
             </div>
             <div class="timeline-item">
                 <div class="timeline-content">
                     <div class="timeline-dot"></div>
-                    <span class="era">2.7 Milliarden Jahre</span>
-                    <h3>Photosynthese</h3>
-                    <p>Cyanobakterien entwickeln die Fähigkeit zur Photosynthese. Beginn der Sauerstoffanreicherung.</p>
+                    <span class="era">2.7 Billion Years Ago</span>
+                    <h3>Photosynthesis</h3>
+                    <p>Cyanobacteria develop the ability to photosynthesize. Beginning of oxygen accumulation.</p>
                 </div>
             </div>
             <div class="timeline-item">
                 <div class="timeline-content">
                     <div class="timeline-dot"></div>
-                    <span class="era">2.0 Milliarden Jahre</span>
-                    <h3>Eukaryoten</h3>
-                    <p>Entwicklung komplexer Zellen mit Zellkern durch Endosymbiose. Mitochondrien werden integriert.</p>
+                    <span class="era">2.0 Billion Years Ago</span>
+                    <h3>Eukaryotes</h3>
+                    <p>Development of complex cells with nucleus through endosymbiosis. Mitochondria become integrated.</p>
                 </div>
             </div>
             <div class="timeline-item">
                 <div class="timeline-content">
                     <div class="timeline-dot"></div>
-                    <span class="era">1.2 Milliarden Jahre</span>
-                    <h3>Sexuelle Reproduktion</h3>
-                    <p>Meiose ermöglicht genetische Rekombination. Beschleunigung der evolutionären Diversität.</p>
+                    <span class="era">1.2 Billion Years Ago</span>
+                    <h3>Sexual Reproduction</h3>
+                    <p>Meiosis enables genetic recombination. Acceleration of evolutionary diversity.</p>
                 </div>
             </div>
             <div class="timeline-item">
                 <div class="timeline-content">
                     <div class="timeline-dot"></div>
-                    <span class="era">600 Millionen Jahre</span>
-                    <h3>Mehrzellige Organismen</h3>
-                    <p>Erste komplexe mehrzellige Lebewesen. Zelldifferenzierung und Spezialisierung beginnt.</p>
+                    <span class="era">600 Million Years Ago</span>
+                    <h3>Multicellular Organisms</h3>
+                    <p>First complex multicellular life forms. Cell differentiation and specialization begins.</p>
                 </div>
             </div>
             <div class="timeline-item">
                 <div class="timeline-content">
                     <div class="timeline-dot"></div>
-                    <span class="era">540 Millionen Jahre</span>
-                    <h3>Kambrische Explosion</h3>
-                    <p>Explosionsartige Diversifizierung des Lebens. Entstehung aller modernen Tierstämme.</p>
+                    <span class="era">540 Million Years Ago</span>
+                    <h3>Cambrian Explosion</h3>
+                    <p>Explosive diversification of life. Emergence of all modern animal phyla.</p>
                 </div>
             </div>
             <div class="timeline-item">
                 <div class="timeline-content">
                     <div class="timeline-dot"></div>
-                    <span class="era">Heute</span>
-                    <h3>Moderne Komplexität</h3>
-                    <p>37 Billionen Zellen im menschlichen Körper. 200+ spezialisierte Zelltypen arbeiten koordiniert.</p>
+                    <span class="era">Present Day</span>
+                    <h3>Modern Complexity</h3>
+                    <p>37 trillion cells in the human body. 200+ specialized cell types working in coordination.</p>
                 </div>
             </div>
         </div>
     </section>
 
     <section class="cell-division-section">
-        <h2 class="section-title">Mitose | Zellteilung</h2>
+        <h2 class="section-title">Mitosis | Cell Division</h2>
         <canvas id="divisionCanvas" width="800" height="400"></canvas>
         <div class="phase-controls">
             <button class="phase-btn active" data-phase="interphase">Interphase</button>
@@ -577,54 +550,49 @@
             <button class="phase-btn" data-phase="metaphase">Metaphase</button>
             <button class="phase-btn" data-phase="anaphase">Anaphase</button>
             <button class="phase-btn" data-phase="telophase">Telophase</button>
-            <button class="phase-btn" data-phase="auto">Automatisch</button>
+            <button class="phase-btn" data-phase="auto">Automatic</button>
         </div>
         <div class="division-container" style="margin-top: 60px;">
             <div class="phase-card" data-phase="interphase">
                 <div class="phase-visual" id="vis-interphase"></div>
                 <h4>Interphase</h4>
-                <p>Zellwachstum und DNA-Replikation. Die Zelle bereitet sich auf die Teilung vor.</p>
+                <p>Cell growth and DNA replication. The cell prepares for division.</p>
             </div>
             <div class="phase-card" data-phase="prophase">
                 <div class="phase-visual" id="vis-prophase"></div>
                 <h4>Prophase</h4>
-                <p>Chromatin kondensiert zu Chromosomen. Die Kernmembran beginnt aufzulösen.</p>
+                <p>Chromatin condenses into chromosomes. Nuclear membrane begins to dissolve.</p>
             </div>
             <div class="phase-card" data-phase="metaphase">
                 <div class="phase-visual" id="vis-metaphase"></div>
                 <h4>Metaphase</h4>
-                <p>Chromosomen ordnen sich in der Äquatorialebene an. Spindelfasern befestigen sich.</p>
+                <p>Chromosomes align at the equatorial plane. Spindle fibers attach.</p>
             </div>
             <div class="phase-card" data-phase="anaphase">
                 <div class="phase-visual" id="vis-anaphase"></div>
                 <h4>Anaphase</h4>
-                <p>Schwesterchromatiden werden zu entgegengesetzten Polen gezogen.</p>
+                <p>Sister chromatids are pulled to opposite poles.</p>
             </div>
             <div class="phase-card" data-phase="telophase">
                 <div class="phase-visual" id="vis-telophase"></div>
                 <h4>Telophase</h4>
-                <p>Neue Kernmembranen bilden sich. Zytokinese teilt das Zytoplasma.</p>
+                <p>New nuclear membranes form. Cytokinesis divides the cytoplasm.</p>
             </div>
         </div>
     </section>
 
-    <div class="stats-bar">
-        <div class="stat">
-            <div class="stat-value" id="cellCount">0</div>
-            <div class="stat-label">Zellen</div>
-        </div>
-        <div class="stat">
-            <div class="stat-value" id="generationCount">0</div>
-            <div class="stat-label">Generationen</div>
-        </div>
-        <div class="stat">
-            <div class="stat-value" id="timeElapsed">0.0</div>
-            <div class="stat-label">Milliarden Jahre</div>
+    <div class="title-bar" id="titleBar">
+        <h1>Evolution</h1>
+        <p class="subtitle">Cellular Transformation</p>
+        <div class="scroll-arrow">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M12 5v14M19 12l-7 7-7-7"/>
+            </svg>
         </div>
     </div>
 
     <footer>
-        Zelluläre Evolution | Wissenschaftliche Visualisierung
+        Cellular Evolution | Scientific Visualization
     </footer>
 
     <script>
@@ -638,6 +606,10 @@
         let isPlaying = false;
         let gainNode = null;
         let oscillators = [];
+        let globalTime = 0;
+        let heroPhase = 0;
+        let heroCycleTime = 0;
+        const cycleDuration = 600;
 
         function resizeHeroCanvas() {
             heroCanvas.width = window.innerWidth;
@@ -646,136 +618,319 @@
         resizeHeroCanvas();
         window.addEventListener('resize', resizeHeroCanvas);
 
-        class Cell {
-            constructor(x, y, radius, type = 'prokaryote') {
-                this.x = x;
-                this.y = y;
-                this.radius = radius;
-                this.type = type;
-                this.vx = (Math.random() - 0.5) * 0.5;
-                this.vy = (Math.random() - 0.5) * 0.5;
-                this.phase = Math.random() * Math.PI * 2;
-                this.pulseSpeed = 0.02 + Math.random() * 0.02;
-                this.hue = type === 'prokaryote' ? 180 : (type === 'eukaryote' ? 280 : 140);
-                this.organelles = [];
-                if (type === 'eukaryote' || type === 'complex') {
-                    for (let i = 0; i < 5 + Math.floor(Math.random() * 5); i++) {
-                        this.organelles.push({
-                            angle: Math.random() * Math.PI * 2,
-                            dist: Math.random() * (radius * 0.6),
-                            size: 2 + Math.random() * 4,
-                            speed: 0.01 + Math.random() * 0.02
-                        });
-                    }
-                }
+        function easeInOut(t) {
+            return t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
+        }
+
+        function drawHeroCell(ctx, x, y, radius, opacity, elongation = 0) {
+            ctx.save();
+            ctx.translate(x, y);
+            
+            const gradient = ctx.createRadialGradient(0, 0, 0, 0, 0, radius);
+            gradient.addColorStop(0, `rgba(255,255,255,${opacity * 0.12})`);
+            gradient.addColorStop(0.6, `rgba(255,255,255,${opacity * 0.04})`);
+            gradient.addColorStop(1, 'rgba(255,255,255,0)');
+
+            ctx.beginPath();
+            if (elongation > 0) {
+                ctx.ellipse(0, 0, radius * (1 + elongation * 0.5), radius * (1 - elongation * 0.3), 0, 0, Math.PI * 2);
+            } else {
+                ctx.arc(0, 0, radius, 0, Math.PI * 2);
             }
+            ctx.fillStyle = gradient;
+            ctx.fill();
 
-            update() {
-                this.phase += this.pulseSpeed;
-                this.x += this.vx;
-                this.y += this.vy;
+            ctx.strokeStyle = `rgba(255,255,255,${opacity * 0.25})`;
+            ctx.lineWidth = 1;
+            ctx.stroke();
+            
+            ctx.restore();
+        }
 
-                if (this.x < this.radius || this.x > heroCanvas.width - this.radius) this.vx *= -1;
-                if (this.y < this.radius || this.y > heroCanvas.height - this.radius) this.vy *= -1;
+        function drawHeroNucleus(ctx, x, y, radius, opacity, dissolve = 0) {
+            const actualOpacity = opacity * (1 - dissolve);
+            if (actualOpacity <= 0) return;
+            
+            const gradient = ctx.createRadialGradient(x, y, 0, x, y, radius);
+            gradient.addColorStop(0, `rgba(255,255,255,${actualOpacity * 0.15})`);
+            gradient.addColorStop(1, `rgba(255,255,255,${actualOpacity * 0.03})`);
 
-                this.organelles.forEach(o => o.angle += o.speed);
-            }
-
-            draw(ctx) {
-                const pulse = Math.sin(this.phase) * 0.1 + 1;
-                const r = this.radius * pulse;
-
-                const gradient = ctx.createRadialGradient(this.x, this.y, 0, this.x, this.y, r);
-                gradient.addColorStop(0, `hsla(${this.hue}, 100%, 60%, 0.8)`);
-                gradient.addColorStop(0.5, `hsla(${this.hue}, 80%, 40%, 0.4)`);
-                gradient.addColorStop(1, `hsla(${this.hue}, 60%, 20%, 0)`);
-
-                ctx.beginPath();
-                ctx.arc(this.x, this.y, r, 0, Math.PI * 2);
-                ctx.fillStyle = gradient;
-                ctx.fill();
-
-                ctx.beginPath();
-                ctx.arc(this.x, this.y, r * 0.95, 0, Math.PI * 2);
-                ctx.strokeStyle = `hsla(${this.hue}, 100%, 70%, ${0.3 + Math.sin(this.phase) * 0.2})`;
-                ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.arc(x, y, radius, 0, Math.PI * 2);
+            ctx.fillStyle = gradient;
+            ctx.fill();
+            
+            if (dissolve < 0.5) {
+                ctx.strokeStyle = `rgba(255,255,255,${actualOpacity * 0.2})`;
+                ctx.lineWidth = 0.5;
                 ctx.stroke();
-
-                if (this.type !== 'prokaryote') {
-                    ctx.beginPath();
-                    ctx.arc(this.x, this.y, r * 0.3, 0, Math.PI * 2);
-                    ctx.fillStyle = `hsla(${this.hue + 40}, 80%, 50%, 0.6)`;
-                    ctx.fill();
-                }
-
-                this.organelles.forEach(o => {
-                    const ox = this.x + Math.cos(o.angle) * o.dist;
-                    const oy = this.y + Math.sin(o.angle) * o.dist;
-                    ctx.beginPath();
-                    ctx.arc(ox, oy, o.size, 0, Math.PI * 2);
-                    ctx.fillStyle = `hsla(${this.hue - 60}, 70%, 60%, 0.5)`;
-                    ctx.fill();
-                });
             }
         }
 
-        class Particle {
-            constructor() {
-                this.reset();
-            }
+        function drawHeroChromatin(ctx, x, y, radius, time, opacity) {
+            for (let i = 0; i < 12; i++) {
+                const angle = (i / 12) * Math.PI * 2 + time * 0.1;
+                const dist = radius * 0.6 * (0.5 + Math.sin(time * 0.5 + i) * 0.5);
+                const px = x + Math.cos(angle) * dist;
+                const py = y + Math.sin(angle) * dist;
 
-            reset() {
-                this.x = Math.random() * heroCanvas.width;
-                this.y = Math.random() * heroCanvas.height;
-                this.size = Math.random() * 2;
-                this.speedY = -0.2 - Math.random() * 0.3;
-                this.opacity = Math.random() * 0.5;
-            }
-
-            update() {
-                this.y += this.speedY;
-                if (this.y < 0) this.reset();
-            }
-
-            draw(ctx) {
                 ctx.beginPath();
-                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-                ctx.fillStyle = `rgba(0, 245, 255, ${this.opacity})`;
+                ctx.arc(px, py, 2 + Math.sin(time + i) * 1, 0, Math.PI * 2);
+                ctx.fillStyle = `rgba(255,255,255,${opacity * 0.3})`;
                 ctx.fill();
             }
         }
 
-        const cells = [];
-        const particles = [];
-
-        for (let i = 0; i < 15; i++) {
-            const type = i < 5 ? 'prokaryote' : (i < 10 ? 'eukaryote' : 'complex');
-            cells.push(new Cell(
-                Math.random() * heroCanvas.width,
-                Math.random() * heroCanvas.height,
-                20 + Math.random() * 40,
-                type
-            ));
+        function drawHeroChromosomes(ctx, x, y, spread, time, opacity, separation = 0) {
+            const count = 8;
+            for (let i = 0; i < count; i++) {
+                const baseAngle = (i / count) * Math.PI * 2;
+                const dist = spread * (0.3 + Math.sin(time * 0.3 + i) * 0.1);
+                
+                const leftX = x + Math.cos(baseAngle) * dist - separation;
+                const rightX = x + Math.cos(baseAngle) * dist + separation;
+                const posY = y + Math.sin(baseAngle) * dist;
+                
+                ctx.save();
+                ctx.translate(leftX, posY);
+                ctx.rotate(baseAngle + Math.PI / 4);
+                
+                ctx.beginPath();
+                ctx.moveTo(-6, -2);
+                ctx.lineTo(0, -5);
+                ctx.lineTo(6, -2);
+                ctx.lineTo(6, 2);
+                ctx.lineTo(0, 5);
+                ctx.lineTo(-6, 2);
+                ctx.closePath();
+                ctx.fillStyle = `rgba(255,255,255,${opacity * 0.4})`;
+                ctx.fill();
+                ctx.strokeStyle = `rgba(255,255,255,${opacity * 0.15})`;
+                ctx.lineWidth = 0.5;
+                ctx.stroke();
+                ctx.restore();
+                
+                if (separation > 5) {
+                    ctx.save();
+                    ctx.translate(rightX, posY);
+                    ctx.rotate(baseAngle + Math.PI / 4);
+                    ctx.beginPath();
+                    ctx.moveTo(-6, -2);
+                    ctx.lineTo(0, -5);
+                    ctx.lineTo(6, -2);
+                    ctx.lineTo(6, 2);
+                    ctx.lineTo(0, 5);
+                    ctx.lineTo(-6, 2);
+                    ctx.closePath();
+                    ctx.fillStyle = `rgba(255,255,255,${opacity * 0.4})`;
+                    ctx.fill();
+                    ctx.restore();
+                }
+            }
         }
 
-        for (let i = 0; i < 100; i++) {
-            particles.push(new Particle());
+        function drawHeroSpindle(ctx, x, y, length, time, opacity) {
+            const poles = [{ x: x - length, y: y }, { x: x + length, y: y }];
+            
+            poles.forEach(pole => {
+                ctx.beginPath();
+                ctx.arc(pole.x, pole.y, 4, 0, Math.PI * 2);
+                ctx.fillStyle = `rgba(255,255,255,${opacity * 0.4})`;
+                ctx.fill();
+                
+                for (let i = 0; i < 16; i++) {
+                    const targetY = y + (i - 7.5) * 8;
+                    const wobble = Math.sin(time * 2 + i * 0.5) * 3;
+                    
+                    ctx.beginPath();
+                    ctx.moveTo(pole.x, pole.y);
+                    ctx.quadraticCurveTo(
+                        (pole.x + x) / 2,
+                        targetY + wobble,
+                        x + (pole.x < x ? -8 : 8),
+                        targetY
+                    );
+                    ctx.strokeStyle = `rgba(255,255,255,${opacity * 0.08})`;
+                    ctx.lineWidth = 0.5;
+                    ctx.stroke();
+                }
+            });
+        }
+
+        function drawCleavage(ctx, x, y, height, progress, opacity) {
+            const indent = progress * 50;
+            
+            ctx.beginPath();
+            ctx.moveTo(x, y - height);
+            ctx.quadraticCurveTo(x + indent, y, x, y + height);
+            ctx.strokeStyle = `rgba(255,255,255,${opacity * 0.3})`;
+            ctx.lineWidth = 1;
+            ctx.stroke();
+
+            ctx.beginPath();
+            ctx.moveTo(x, y - height);
+            ctx.quadraticCurveTo(x - indent, y, x, y + height);
+            ctx.stroke();
         }
 
         function animateHero() {
+            globalTime++;
+            
             if (!isPaused) {
-                heroCtx.fillStyle = 'rgba(10, 10, 15, 0.1)';
+                heroCtx.fillStyle = 'rgba(0, 0, 0, 0.02)';
                 heroCtx.fillRect(0, 0, heroCanvas.width, heroCanvas.height);
 
-                particles.forEach(p => {
-                    p.update();
-                    p.draw(heroCtx);
-                });
+                heroCycleTime++;
+                const cycleProgress = (heroCycleTime % (cycleDuration * 5)) / cycleDuration;
+                const phaseIndex = Math.floor(cycleProgress);
+                const phaseProgress = cycleProgress - phaseIndex;
+                
+                const cx = heroCanvas.width / 2;
+                const cy = heroCanvas.height / 2;
+                const baseRadius = Math.min(heroCanvas.width, heroCanvas.height) * 0.25;
+                const time = globalTime * 0.01;
 
-                cells.forEach(cell => {
-                    cell.update();
-                    cell.draw(heroCtx);
-                });
+                const breathe = Math.sin(time * 0.5) * 0.05 + 1;
+                const opacity = 1;
+
+                switch(phaseIndex) {
+                    case 0:
+                        const interRadius = baseRadius * breathe;
+                        drawHeroCell(heroCtx, cx, cy, interRadius, opacity);
+                        drawHeroNucleus(heroCtx, cx, cy, interRadius * 0.4, opacity, 0);
+                        drawHeroChromatin(heroCtx, cx, cy, interRadius * 0.35, time, opacity);
+                        
+                        if (phaseProgress > 0.7) {
+                            const t = (phaseProgress - 0.7) / 0.3;
+                            drawHeroNucleus(heroCtx, cx, cy, interRadius * 0.4, opacity * (1 - t * 0.3), 0);
+                        }
+                        break;
+
+                    case 1:
+                        const proRadius = baseRadius * breathe * (1 + phaseProgress * 0.1);
+                        const dissolve = easeInOut(phaseProgress);
+                        drawHeroCell(heroCtx, cx, cy, proRadius, opacity);
+                        drawHeroNucleus(heroCtx, cx, cy, proRadius * 0.4, opacity, dissolve * 0.8);
+                        
+                        const condense = easeInOut(phaseProgress);
+                        if (condense < 0.5) {
+                            drawHeroChromatin(heroCtx, cx, cy, proRadius * 0.35 * (1 - condense), time, opacity * (1 - condense));
+                        }
+                        drawHeroChromosomes(heroCtx, cx, cy, proRadius * 0.25 * condense, time, opacity * condense);
+                        break;
+
+                    case 2:
+                        const metaRadius = baseRadius * breathe * 1.1;
+                        const spindleGrow = easeInOut(Math.min(phaseProgress * 2, 1));
+                        const alignProgress = easeInOut(phaseProgress);
+                        
+                        drawHeroCell(heroCtx, cx, cy, metaRadius, opacity);
+                        drawHeroSpindle(heroCtx, cx, cy, metaRadius * 0.8 * spindleGrow, time, opacity * spindleGrow);
+                        
+                        for (let i = 0; i < 8; i++) {
+                            const startY = cy + (Math.sin(i * 1.3) * metaRadius * 0.3);
+                            const endY = cy + (i - 3.5) * 15;
+                            const currentY = startY + (endY - startY) * alignProgress;
+                            const wobble = Math.sin(time * 3 + i) * (3 * (1 - alignProgress));
+                            
+                            heroCtx.save();
+                            heroCtx.translate(cx + wobble, currentY);
+                            
+                            heroCtx.beginPath();
+                            heroCtx.ellipse(-5, 0, 4, 6, 0, 0, Math.PI * 2);
+                            heroCtx.fillStyle = `rgba(255,255,255,${opacity * 0.35})`;
+                            heroCtx.fill();
+                            
+                            heroCtx.beginPath();
+                            heroCtx.ellipse(5, 0, 4, 6, 0, 0, Math.PI * 2);
+                            heroCtx.fill();
+                            
+                            heroCtx.beginPath();
+                            heroCtx.arc(0, 0, 2, 0, Math.PI * 2);
+                            heroCtx.fillStyle = `rgba(255,255,255,${opacity * 0.5})`;
+                            heroCtx.fill();
+                            
+                            heroCtx.restore();
+                        }
+                        break;
+
+                    case 3:
+                        const anaRadius = baseRadius * breathe * 1.1;
+                        const separation = easeInOut(phaseProgress) * anaRadius * 0.6;
+                        const elongation = easeInOut(phaseProgress) * 0.4;
+                        
+                        drawHeroCell(heroCtx, cx, cy, anaRadius * (1 + elongation * 0.3), opacity, elongation);
+                        drawHeroSpindle(heroCtx, cx, cy, anaRadius * 0.8, time, opacity);
+                        
+                        for (let i = 0; i < 8; i++) {
+                            const yPos = cy + (i - 3.5) * 14;
+                            
+                            heroCtx.beginPath();
+                            heroCtx.ellipse(cx - separation, yPos, 4, 5, 0, 0, Math.PI * 2);
+                            heroCtx.fillStyle = `rgba(255,255,255,${opacity * 0.4})`;
+                            heroCtx.fill();
+                            
+                            heroCtx.beginPath();
+                            heroCtx.ellipse(cx + separation, yPos, 4, 5, 0, 0, Math.PI * 2);
+                            heroCtx.fill();
+                        }
+                        
+                        if (phaseProgress > 0.5) {
+                            drawCleavage(heroCtx, cx, cy, anaRadius * 0.8, (phaseProgress - 0.5) * 2, opacity);
+                        }
+                        break;
+
+                    case 4:
+                        const teloProgress = easeInOut(phaseProgress);
+                        const splitDist = baseRadius * 0.5 + teloProgress * baseRadius * 0.3;
+                        const newRadius = baseRadius * 0.6 * (1 - teloProgress * 0.1);
+                        const nucleusReform = easeInOut(Math.max(0, (phaseProgress - 0.3) / 0.7));
+                        
+                        drawHeroCell(heroCtx, cx - splitDist, cy, newRadius, opacity);
+                        drawHeroCell(heroCtx, cx + splitDist, cy, newRadius, opacity);
+                        
+                        drawHeroNucleus(heroCtx, cx - splitDist, cy, newRadius * 0.35, opacity, 1 - nucleusReform);
+                        drawHeroNucleus(heroCtx, cx + splitDist, cy, newRadius * 0.35, opacity, 1 - nucleusReform);
+                        
+                        if (nucleusReform > 0.3) {
+                            drawHeroChromatin(heroCtx, cx - splitDist, cy, newRadius * 0.3, time, opacity * (nucleusReform - 0.3));
+                            drawHeroChromatin(heroCtx, cx + splitDist, cy, newRadius * 0.3, time + Math.PI, opacity * (nucleusReform - 0.3));
+                        }
+                        
+                        if (teloProgress < 0.5) {
+                            drawCleavage(heroCtx, cx, cy, newRadius * 1.2, 0.5 + teloProgress, opacity * (1 - teloProgress * 2));
+                        }
+                        break;
+                }
+
+                for (let ring = 1; ring <= 3; ring++) {
+                    const ringRadius = baseRadius * (1.3 + ring * 0.3) + Math.sin(time * 0.3 + ring) * 10;
+                    const ringOpacity = 0.03 - ring * 0.008;
+                    
+                    heroCtx.beginPath();
+                    heroCtx.arc(cx, cy, ringRadius, 0, Math.PI * 2);
+                    heroCtx.strokeStyle = `rgba(255,255,255,${ringOpacity})`;
+                    heroCtx.lineWidth = 0.5;
+                    heroCtx.stroke();
+                }
+
+                const phaseNames = ['INTERPHASE', 'PROPHASE', 'METAPHASE', 'ANAPHASE', 'TELOPHASE'];
+                heroCtx.font = '100 11px "Segoe UI", system-ui, sans-serif';
+                heroCtx.fillStyle = 'rgba(255,255,255,0.12)';
+                heroCtx.textAlign = 'center';
+                heroCtx.letterSpacing = '0.3em';
+                
+                const bottomY = heroCanvas.height - 195;
+                heroCtx.fillText(phaseNames[phaseIndex], cx, bottomY);
+                
+                const progressWidth = 200;
+                const progressX = cx - progressWidth / 2;
+                const progressY = bottomY + 10;
+                
+                heroCtx.fillStyle = 'rgba(255,255,255,0.05)';
+                heroCtx.fillRect(progressX, progressY, progressWidth, 1);
+                heroCtx.fillStyle = 'rgba(255,255,255,0.15)';
+                heroCtx.fillRect(progressX, progressY, progressWidth * (cycleProgress / 5), 1);
             }
             requestAnimationFrame(animateHero);
         }
@@ -850,9 +1005,9 @@
 
         function drawCell(x, y, radius, membrane, elongation) {
             const gradient = divCtx.createRadialGradient(x, y, 0, x, y, radius);
-            gradient.addColorStop(0, 'rgba(0, 100, 150, 0.3)');
-            gradient.addColorStop(0.8, 'rgba(0, 50, 100, 0.2)');
-            gradient.addColorStop(1, 'rgba(0, 200, 255, 0.1)');
+            gradient.addColorStop(0, 'rgba(255,255,255,0.08)');
+            gradient.addColorStop(0.8, 'rgba(255,255,255,0.03)');
+            gradient.addColorStop(1, 'rgba(255,255,255,0)');
 
             divCtx.beginPath();
             if (elongation > 0) {
@@ -864,23 +1019,23 @@
             divCtx.fill();
 
             if (membrane) {
-                divCtx.strokeStyle = 'rgba(0, 245, 255, 0.6)';
-                divCtx.lineWidth = 3;
+                divCtx.strokeStyle = 'rgba(255,255,255,0.3)';
+                divCtx.lineWidth = 1;
                 divCtx.stroke();
             }
         }
 
         function drawNucleus(x, y, radius, opacity) {
             const gradient = divCtx.createRadialGradient(x, y, 0, x, y, radius);
-            gradient.addColorStop(0, `rgba(255, 0, 255, ${opacity * 0.5})`);
-            gradient.addColorStop(1, `rgba(150, 0, 150, ${opacity * 0.2})`);
+            gradient.addColorStop(0, `rgba(255,255,255,${opacity * 0.15})`);
+            gradient.addColorStop(1, `rgba(255,255,255,${opacity * 0.05})`);
 
             divCtx.beginPath();
             divCtx.arc(x, y, radius, 0, Math.PI * 2);
             divCtx.fillStyle = gradient;
             divCtx.fill();
-            divCtx.strokeStyle = `rgba(255, 100, 255, ${opacity * 0.8})`;
-            divCtx.lineWidth = 2;
+            divCtx.strokeStyle = `rgba(255,255,255,${opacity * 0.3})`;
+            divCtx.lineWidth = 1;
             divCtx.stroke();
         }
 
@@ -892,18 +1047,18 @@
                 const py = y + Math.sin(angle) * dist;
 
                 divCtx.beginPath();
-                divCtx.arc(px, py, 3, 0, Math.PI * 2);
-                divCtx.fillStyle = 'rgba(255, 200, 0, 0.7)';
+                divCtx.arc(px, py, 2, 0, Math.PI * 2);
+                divCtx.fillStyle = 'rgba(255,255,255,0.4)';
                 divCtx.fill();
             }
         }
 
         function drawChromosomes(x, y, radius, time, condensed) {
             const chromosomes = [
-                { angle: 0, color: '#ff6b6b' },
-                { angle: Math.PI/2, color: '#4ecdc4' },
-                { angle: Math.PI, color: '#ffe66d' },
-                { angle: Math.PI * 1.5, color: '#95e1d3' }
+                { angle: 0, color: 'rgba(255,255,255,0.6)' },
+                { angle: Math.PI/2, color: 'rgba(255,255,255,0.5)' },
+                { angle: Math.PI, color: 'rgba(255,255,255,0.4)' },
+                { angle: Math.PI * 1.5, color: 'rgba(255,255,255,0.5)' }
             ];
 
             chromosomes.forEach((chr, i) => {
@@ -926,7 +1081,7 @@
                 divCtx.closePath();
                 divCtx.fillStyle = chr.color;
                 divCtx.fill();
-                divCtx.strokeStyle = 'rgba(255,255,255,0.5)';
+                divCtx.strokeStyle = 'rgba(255,255,255,0.2)';
                 divCtx.lineWidth = 1;
                 divCtx.stroke();
 
@@ -939,8 +1094,8 @@
 
             poles.forEach(pole => {
                 divCtx.beginPath();
-                divCtx.arc(pole.x, pole.y, 8, 0, Math.PI * 2);
-                divCtx.fillStyle = 'rgba(0, 255, 136, 0.8)';
+                divCtx.arc(pole.x, pole.y, 5, 0, Math.PI * 2);
+                divCtx.fillStyle = 'rgba(255,255,255,0.5)';
                 divCtx.fill();
                 
                 for (let i = 0; i < 12; i++) {
@@ -955,7 +1110,7 @@
                         endX,
                         endY
                     );
-                    divCtx.strokeStyle = `rgba(0, 255, 136, ${0.3 + Math.sin(time + i) * 0.1})`;
+                    divCtx.strokeStyle = `rgba(255,255,255,${0.1 + Math.sin(time + i) * 0.05})`;
                     divCtx.lineWidth = 1;
                     divCtx.stroke();
                 }
@@ -963,7 +1118,7 @@
         }
 
         function drawChromosomesAligned(x, y, time) {
-            const colors = ['#ff6b6b', '#4ecdc4', '#ffe66d', '#95e1d3', '#dfe6e9', '#a29bfe'];
+            const colors = ['rgba(255,255,255,0.5)', 'rgba(255,255,255,0.45)', 'rgba(255,255,255,0.4)', 'rgba(255,255,255,0.45)', 'rgba(255,255,255,0.5)', 'rgba(255,255,255,0.4)'];
             
             for (let i = 0; i < 6; i++) {
                 const py = y + (i - 2.5) * 20;
@@ -983,8 +1138,8 @@
                 divCtx.fill();
 
                 divCtx.beginPath();
-                divCtx.arc(0, 0, 3, 0, Math.PI * 2);
-                divCtx.fillStyle = 'rgba(255,255,255,0.8)';
+                divCtx.arc(0, 0, 2, 0, Math.PI * 2);
+                divCtx.fillStyle = 'rgba(255,255,255,0.6)';
                 divCtx.fill();
 
                 divCtx.restore();
@@ -992,7 +1147,7 @@
         }
 
         function drawChromosomesSeparating(x, y, separation, time) {
-            const colors = ['#ff6b6b', '#4ecdc4', '#ffe66d', '#95e1d3', '#dfe6e9', '#a29bfe'];
+            const colors = ['rgba(255,255,255,0.5)', 'rgba(255,255,255,0.45)', 'rgba(255,255,255,0.4)', 'rgba(255,255,255,0.45)', 'rgba(255,255,255,0.5)', 'rgba(255,255,255,0.4)'];
             
             for (let i = 0; i < 6; i++) {
                 const py = y + (i - 2.5) * 18;
@@ -1015,8 +1170,8 @@
             divCtx.beginPath();
             divCtx.moveTo(x, y - 60);
             divCtx.quadraticCurveTo(x + indent, y, x, y + 60);
-            divCtx.strokeStyle = 'rgba(255, 0, 255, 0.6)';
-            divCtx.lineWidth = 3;
+            divCtx.strokeStyle = 'rgba(255,255,255,0.3)';
+            divCtx.lineWidth = 1;
             divCtx.stroke();
 
             divCtx.beginPath();
@@ -1053,48 +1208,184 @@
             if (audioContext) return;
 
             audioContext = new (window.AudioContext || window.webkitAudioContext)();
-            gainNode = audioContext.createGain();
-            gainNode.connect(audioContext.destination);
-            gainNode.gain.value = 0.3;
+            
+            const masterGain = audioContext.createGain();
+            masterGain.gain.value = 0.4;
+            masterGain.connect(audioContext.destination);
+            gainNode = masterGain;
 
-            function createOscillator(freq, type, detune = 0) {
-                const osc = audioContext.createOscillator();
+            const reverb = audioContext.createConvolver();
+            const reverbGain = audioContext.createGain();
+            reverbGain.gain.value = 0.3;
+            
+            const sampleRate = audioContext.sampleRate;
+            const length = sampleRate * 3;
+            const impulse = audioContext.createBuffer(2, length, sampleRate);
+            for (let channel = 0; channel < 2; channel++) {
+                const channelData = impulse.getChannelData(channel);
+                for (let i = 0; i < length; i++) {
+                    channelData[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / length, 2.5);
+                }
+            }
+            reverb.buffer = impulse;
+            reverb.connect(reverbGain);
+            reverbGain.connect(masterGain);
+
+            const dryGain = audioContext.createGain();
+            dryGain.gain.value = 0.7;
+            dryGain.connect(masterGain);
+
+            function createDrone(freq, volume = 0.1) {
+                const osc1 = audioContext.createOscillator();
+                const osc2 = audioContext.createOscillator();
                 const oscGain = audioContext.createGain();
+                const filter = audioContext.createBiquadFilter();
                 
-                osc.type = type;
-                osc.frequency.value = freq;
-                osc.detune.value = detune;
+                osc1.type = 'sine';
+                osc1.frequency.value = freq;
                 
-                oscGain.gain.value = 0.1;
+                osc2.type = 'sine';
+                osc2.frequency.value = freq * 1.002;
                 
-                osc.connect(oscGain);
-                oscGain.connect(gainNode);
+                filter.type = 'lowpass';
+                filter.frequency.value = 800;
+                filter.Q.value = 1;
                 
-                return { osc, gain: oscGain };
+                oscGain.gain.value = volume;
+                
+                osc1.connect(filter);
+                osc2.connect(filter);
+                filter.connect(oscGain);
+                oscGain.connect(reverb);
+                oscGain.connect(dryGain);
+                
+                osc1.start();
+                osc2.start();
+                
+                return { osc1, osc2, gain: oscGain, filter };
             }
 
-            const baseFreq = 55;
-            oscillators = [
-                createOscillator(baseFreq, 'sine'),
-                createOscillator(baseFreq * 1.5, 'sine', 5),
-                createOscillator(baseFreq * 2, 'triangle', -5),
-                createOscillator(baseFreq * 3, 'sine', 3),
-            ];
+            function createPad(baseFreq) {
+                const voices = [];
+                const ratios = [1, 1.5, 2, 2.5, 3];
+                
+                ratios.forEach((ratio, i) => {
+                    const osc = audioContext.createOscillator();
+                    const gain = audioContext.createGain();
+                    
+                    osc.type = i % 2 === 0 ? 'sine' : 'triangle';
+                    osc.frequency.value = baseFreq * ratio;
+                    gain.gain.value = 0.04 / (i + 1);
+                    
+                    osc.connect(gain);
+                    gain.connect(reverb);
+                    osc.start();
+                    
+                    voices.push({ osc, gain });
+                });
+                
+                return voices;
+            }
+
+            function createArpeggio() {
+                const notes = [55, 82.5, 110, 137.5, 165, 137.5, 110, 82.5];
+                let noteIndex = 0;
+                
+                const osc = audioContext.createOscillator();
+                const gain = audioContext.createGain();
+                const filter = audioContext.createBiquadFilter();
+                
+                osc.type = 'sine';
+                osc.frequency.value = notes[0];
+                
+                filter.type = 'lowpass';
+                filter.frequency.value = 600;
+                
+                gain.gain.value = 0;
+                
+                osc.connect(filter);
+                filter.connect(gain);
+                gain.connect(reverb);
+                osc.start();
+                
+                function playNote() {
+                    if (!isPlaying) return;
+                    
+                    const now = audioContext.currentTime;
+                    const note = notes[noteIndex % notes.length];
+                    
+                    osc.frequency.setValueAtTime(note, now);
+                    gain.gain.cancelScheduledValues(now);
+                    gain.gain.setValueAtTime(0, now);
+                    gain.gain.linearRampToValueAtTime(0.06, now + 0.05);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + 1.5);
+                    
+                    noteIndex++;
+                    setTimeout(playNote, 2000 + Math.random() * 2000);
+                }
+                
+                setTimeout(playNote, 1000);
+                return { osc, gain };
+            }
+
+            function createTexture() {
+                const bufferSize = 2 * audioContext.sampleRate;
+                const noiseBuffer = audioContext.createBuffer(1, bufferSize, audioContext.sampleRate);
+                const output = noiseBuffer.getChannelData(0);
+                
+                for (let i = 0; i < bufferSize; i++) {
+                    output[i] = Math.random() * 2 - 1;
+                }
+                
+                const whiteNoise = audioContext.createBufferSource();
+                whiteNoise.buffer = noiseBuffer;
+                whiteNoise.loop = true;
+                
+                const noiseFilter = audioContext.createBiquadFilter();
+                noiseFilter.type = 'bandpass';
+                noiseFilter.frequency.value = 400;
+                noiseFilter.Q.value = 0.5;
+                
+                const noiseGain = audioContext.createGain();
+                noiseGain.gain.value = 0.015;
+                
+                whiteNoise.connect(noiseFilter);
+                noiseFilter.connect(noiseGain);
+                noiseGain.connect(reverb);
+                whiteNoise.start();
+                
+                return { source: whiteNoise, filter: noiseFilter, gain: noiseGain };
+            }
+
+            const drone1 = createDrone(55, 0.08);
+            const drone2 = createDrone(82.5, 0.05);
+            const drone3 = createDrone(110, 0.03);
+            const pad = createPad(55);
+            const arp = createArpeggio();
+            const texture = createTexture();
+
+            oscillators = [drone1, drone2, drone3, arp, texture];
 
             function modulateSound() {
                 if (!isPlaying) return;
                 
                 const time = audioContext.currentTime;
-                oscillators.forEach((o, i) => {
-                    const lfoFreq = 0.1 + i * 0.05;
-                    const modulation = Math.sin(time * lfoFreq) * 0.03;
-                    o.gain.gain.setValueAtTime(0.08 + modulation, time);
+                const slowLFO = Math.sin(time * 0.1) * 0.5 + 0.5;
+                const medLFO = Math.sin(time * 0.3) * 0.5 + 0.5;
+                
+                drone1.filter.frequency.setValueAtTime(400 + slowLFO * 600, time);
+                drone2.filter.frequency.setValueAtTime(300 + medLFO * 500, time);
+                
+                texture.filter.frequency.setValueAtTime(200 + slowLFO * 400, time);
+                
+                pad.forEach((voice, i) => {
+                    const lfo = Math.sin(time * (0.05 + i * 0.02)) * 0.02;
+                    voice.gain.gain.setValueAtTime(0.03 / (i + 1) + lfo, time);
                 });
                 
                 requestAnimationFrame(modulateSound);
             }
 
-            oscillators.forEach(o => o.osc.start());
             modulateSound();
         }
 
@@ -1130,27 +1421,21 @@
             pauseBtn.classList.toggle('active');
         });
 
-        let cellCount = 1;
-        let generation = 0;
-        let timeElapsed = 0;
-
-        function updateStats() {
-            if (!isPaused) {
-                timeElapsed += 0.001;
-                if (timeElapsed > 4.5) timeElapsed = 0;
-
-                if (Math.random() < 0.02) {
-                    cellCount = Math.min(cellCount + 1, 9999);
-                    if (cellCount % 10 === 0) generation++;
-                }
-
-                document.getElementById('cellCount').textContent = cellCount.toLocaleString();
-                document.getElementById('generationCount').textContent = generation;
-                document.getElementById('timeElapsed').textContent = timeElapsed.toFixed(1);
+        const titleBar = document.getElementById('titleBar');
+        let lastScrollY = 0;
+        
+        window.addEventListener('scroll', () => {
+            const scrollY = window.scrollY;
+            const heroHeight = window.innerHeight;
+            
+            if (scrollY > 100) {
+                titleBar.classList.add('hidden');
+            } else {
+                titleBar.classList.remove('hidden');
             }
-            requestAnimationFrame(updateStats);
-        }
-        updateStats();
+            
+            lastScrollY = scrollY;
+        });
 
         const observer = new IntersectionObserver((entries) => {
             entries.forEach(entry => {
